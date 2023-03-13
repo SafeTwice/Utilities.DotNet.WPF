@@ -6,6 +6,11 @@
     <UseWPF>true</UseWPF>
     <LangVersion>10</LangVersion>
     <Version>1.0</Version>
+    <UseWPF>true</UseWPF>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.19" />
+  </ItemGroup>
 
 </Project>
