@@ -2,6 +2,8 @@
 /// @copyright  Copyright (c) 2023 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
+using System.Windows;
+
 namespace Utilities.WPF.Net.MVVM
 {
     /// <summary>
@@ -21,5 +23,7 @@ namespace Utilities.WPF.Net.MVVM
         /// Closes the window.
         /// </summary>
         void Close();
+
+        void NavigateTo( Window window );
     }
 }

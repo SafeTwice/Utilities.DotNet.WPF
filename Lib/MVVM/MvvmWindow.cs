@@ -3,6 +3,7 @@
 /// @license    See LICENSE.txt
 
 using System.Windows;
+using Utilities.WPF.Net.Windows;
 
 namespace Utilities.WPF.Net.MVVM
 {
@@ -35,6 +36,11 @@ namespace Utilities.WPF.Net.MVVM
         void IMvvmWindow.Close()
         {
             Close();
+        }
+
+        public void NavigateTo( Window window )
+        {
+            WindowsUtilities.NavigateTo( this, window );
         }
     }
 }
