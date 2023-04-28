@@ -8,9 +8,9 @@ using System.Windows.Input;
 namespace Utilities.WPF.Net.Commands
 {
     /// <summary>
-    /// <see cref="ICommand"/> that delegates its execution to an action.
+    /// <see cref="ICommand"/> that delegates its execution to an action which accepts a parameter.
     /// </summary>
-    public class DelegateCommand : ICommand
+    public class DelegateCommand<T> : ICommand
     {
         //===========================================================================
         //                             PUBLIC EVENTS
@@ -26,7 +26,7 @@ namespace Utilities.WPF.Net.Commands
         /// Constructor.
         /// </summary>
         /// <param name="execute">Action to execute when the command is executed.</param>
-        public DelegateCommand( Action execute ) : this( execute, null )
+        public DelegateCommand( Action<T> execute ) : this( execute, null )
         {
         }
 
@@ -35,7 +35,7 @@ namespace Utilities.WPF.Net.Commands
         /// </summary>
         /// <param name="execute">Action to execute when the command is executed.</param>
         /// <param name="canExecute">Function that evaluates if the command can be executed.</param>
-        public DelegateCommand( Action execute, Func<bool>? canExecute )
+        public DelegateCommand( Action<T> execute, Func<bool>? canExecute )
         {
             m_execute = execute;
             m_canExecute = canExecute;
@@ -57,7 +57,7 @@ namespace Utilities.WPF.Net.Commands
 
         public void Execute( object? parameter )
         {
-            m_execute();
+            m_execute( (T) parameter! );
         }
 
         /// <summary>
@@ -77,7 +77,6 @@ namespace Utilities.WPF.Net.Commands
         //===========================================================================
 
         private readonly Func<bool>? m_canExecute;
-        private readonly Action m_execute;
+        private readonly Action<T> m_execute;
     }
-
 }
