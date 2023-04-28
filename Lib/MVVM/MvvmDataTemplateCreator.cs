@@ -9,9 +9,10 @@ using System.Windows.Controls;
 namespace Utilities.WPF.Net.MVVM
 {
     /// <summary>
-    /// Helper class for selecting templates for different items
+    /// Base class for data template selectors that create data templates from the view type that correspond to
+    /// different items.
     /// </summary>
-    public abstract class MvvmDataTemplateSelector : DataTemplateSelector
+    public abstract class MvvmDataTemplateCreator : DataTemplateSelector
     {
         //===========================================================================
         //                            PUBLIC METHODS
