@@ -14,7 +14,6 @@ namespace Utilities.WPF.Net.ControlHints
     /// Provides the Hint attached property to display a hint on empty controls.
     /// </summary>
     public static class HintService
-   
     {
         //===========================================================================
         //                           PUBLIC PROPERTIES

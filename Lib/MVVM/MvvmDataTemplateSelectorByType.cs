@@ -5,8 +5,8 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Windows.Controls;
 using System.Windows;
+using System.Windows.Controls;
 
 namespace Utilities.WPF.Net.MVVM
 {
