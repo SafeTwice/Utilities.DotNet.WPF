@@ -17,12 +17,19 @@ namespace Utilities.WPF.Net.Commands
         //                           PUBLIC PROPERTIES
         //===========================================================================
 
+        /// <summary>
+        /// Indicates if the commmand is busy executing an asyncronous task.
+        /// </summary>
+        /// <remarks>
+        /// If multiple executions are allowed, this value is always <c>false</c>.
+        /// </remarks>
         public bool IsBusy { get; private set; }
 
         //===========================================================================
         //                             PUBLIC EVENTS
         //===========================================================================
 
+        /// <inheritdoc/>
         public event EventHandler? CanExecuteChanged;
 
         //===========================================================================
@@ -33,7 +40,9 @@ namespace Utilities.WPF.Net.Commands
         /// Constructor.
         /// </summary>
         /// <param name="execute">Action to execute asynchronously when the command is executed.</param>
-        public DelegateCommandAsync( Func<Task> execute ) : this( execute, null )
+        /// <param name="allowMultipleExecutions"><c>false</c> to block re-execution until the previous asynchronous execution has finished,
+        ///                                       <c>true</c> to allow multiple executions to run in parallel</param>
+        public DelegateCommandAsync( Func<Task> execute, bool allowMultipleExecutions = false ) : this( execute, () => true, allowMultipleExecutions )
         {
         }
 
@@ -42,25 +51,25 @@ namespace Utilities.WPF.Net.Commands
         /// </summary>
         /// <param name="execute">Action to execute asynchronously when the command is executed.</param>
         /// <param name="canExecute">Function that evaluates if the command can be executed.</param>
-        public DelegateCommandAsync( Func<Task> execute, Func<bool>? canExecute )
+        /// <param name="allowMultipleExecutions"><c>false</c> to block re-execution until the previous asynchronous execution has finished,
+        ///                                       <c>true</c> to allow multiple executions to run in parallel</param>
+        public DelegateCommandAsync( Func<Task> execute, Func<bool> canExecute, bool allowMultipleExecutions = false )
         {
             m_execute = execute;
             m_canExecute = canExecute;
+            m_blockMultipleExecutions = !allowMultipleExecutions;
         }
 
         //===========================================================================
         //                            PUBLIC METHODS
         //===========================================================================
 
+        /// <inheritdoc/>
         public bool CanExecute( object? parameter )
         {
-            if( IsBusy )
+            if( m_blockMultipleExecutions && IsBusy )
             {
                 return false;
-            }
-            else if( m_canExecute == null )
-            {
-                return true;
             }
             else
             {
@@ -68,19 +77,26 @@ namespace Utilities.WPF.Net.Commands
             }
         }
 
+        /// <inheritdoc/>
         public async void Execute( object? parameter )
         {
             try
             {
-                IsBusy = true;
-                RaiseCanExecuteChanged();
+                if( m_blockMultipleExecutions )
+                {
+                    IsBusy = true;
+                    RaiseCanExecuteChanged();
+                }
 
                 await m_execute().ConfigureAwait( false );
             }
             finally
             {
-                IsBusy = false;
-                RaiseCanExecuteChanged();
+                if( m_blockMultipleExecutions )
+                {
+                    IsBusy = false;
+                    RaiseCanExecuteChanged();
+                }
             }
         }
 
@@ -100,7 +116,8 @@ namespace Utilities.WPF.Net.Commands
         //                           PRIVATE ATTRIBUTES
         //===========================================================================
 
-        private readonly Func<bool>? m_canExecute;
         private readonly Func<Task> m_execute;
+        private readonly Func<bool> m_canExecute;
+        private readonly bool m_blockMultipleExecutions;
     }
 }

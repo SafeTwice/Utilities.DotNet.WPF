@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2021 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2021-2023 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System;
@@ -16,6 +16,7 @@ namespace Utilities.WPF.Net.Commands
         //                             PUBLIC EVENTS
         //===========================================================================
 
+        /// <inheritdoc/>
         public event EventHandler? CanExecuteChanged;
 
         //===========================================================================
@@ -26,7 +27,7 @@ namespace Utilities.WPF.Net.Commands
         /// Constructor.
         /// </summary>
         /// <param name="execute">Action to execute when the command is executed.</param>
-        public DelegateCommand( Action<T> execute ) : this( execute, null )
+        public DelegateCommand( Action<T> execute ) : this( execute, () => true )
         {
         }
 
@@ -35,7 +36,7 @@ namespace Utilities.WPF.Net.Commands
         /// </summary>
         /// <param name="execute">Action to execute when the command is executed.</param>
         /// <param name="canExecute">Function that evaluates if the command can be executed.</param>
-        public DelegateCommand( Action<T> execute, Func<bool>? canExecute )
+        public DelegateCommand( Action<T> execute, Func<bool> canExecute )
         {
             m_execute = execute;
             m_canExecute = canExecute;
@@ -45,16 +46,13 @@ namespace Utilities.WPF.Net.Commands
         //                            PUBLIC METHODS
         //===========================================================================
 
+        /// <inheritdoc/>
         public bool CanExecute( object? parameter )
         {
-            if( m_canExecute == null )
-            {
-                return true;
-            }
-
             return m_canExecute();
         }
 
+        /// <inheritdoc/>
         public void Execute( object? parameter )
         {
             m_execute( (T) parameter! );
@@ -76,7 +74,7 @@ namespace Utilities.WPF.Net.Commands
         //                           PRIVATE ATTRIBUTES
         //===========================================================================
 
-        private readonly Func<bool>? m_canExecute;
         private readonly Action<T> m_execute;
+        private readonly Func<bool> m_canExecute;
     }
 }
