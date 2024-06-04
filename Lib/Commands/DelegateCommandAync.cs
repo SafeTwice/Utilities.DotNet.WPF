@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2023 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2023-2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System;
@@ -18,7 +18,7 @@ namespace Utilities.WPF.Net.Commands
         //===========================================================================
 
         /// <summary>
-        /// Indicates if the commmand is busy executing an asyncronous task.
+        /// Indicates if the command is busy executing an asynchronous task.
         /// </summary>
         /// <remarks>
         /// If multiple executions are allowed, this value is always <c>false</c>.
@@ -88,7 +88,7 @@ namespace Utilities.WPF.Net.Commands
                     RaiseCanExecuteChanged();
                 }
 
-                await m_execute().ConfigureAwait( false );
+                await m_execute().ConfigureAwait( true );
             }
             finally
             {
