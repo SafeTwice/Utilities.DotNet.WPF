@@ -10,7 +10,7 @@ namespace Utilities.WPF.Net.Commands
     /// <summary>
     /// <see cref="ICommand"/> that delegates its execution to an action which accepts a parameter.
     /// </summary>
-    public class DelegateCommand<T> : ICommand
+    public class DelegateCommand<T> : IDelegateCommand
     {
         //===========================================================================
         //                             PUBLIC EVENTS

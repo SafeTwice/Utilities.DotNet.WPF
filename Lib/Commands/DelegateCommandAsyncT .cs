@@ -11,7 +11,7 @@ namespace Utilities.WPF.Net.Commands
     /// <summary>
     /// <see cref="ICommand"/> that delegates its execution to an action which accepts a parameter that is executed asynchronously.
     /// </summary>
-    public class DelegateCommandAsync<T> : ICommand
+    public class DelegateCommandAsync<T> : IDelegateCommand
     {
         //===========================================================================
         //                           PUBLIC PROPERTIES
