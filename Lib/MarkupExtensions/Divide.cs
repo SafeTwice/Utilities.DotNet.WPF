@@ -2,33 +2,13 @@
 /// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
-using System;
-using System.Windows.Markup;
-
 namespace Utilities.WPF.Net.MarkupExtensions
 {
     /// <summary>
     /// Markup extension that divides two numbers (A / B).
     /// </summary>
-    [MarkupExtensionReturnType( typeof( double ) )]
-    public class Divide : MarkupExtension
+    public class Divide : ArithmeticBinaryOperationBase
     {
-        //===========================================================================
-        //                           PUBLIC PROPERTIES
-        //===========================================================================
-
-        /// <summary>
-        /// First number.
-        /// </summary>
-        [ConstructorArgument( "a" )]
-        public double A { get; set; } = 0.0;
-
-        /// <summary>
-        /// Second number.
-        /// </summary>
-        [ConstructorArgument( "b" )]
-        public double B { get; set; } = 0.0;
-
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
         //===========================================================================
@@ -52,12 +32,13 @@ namespace Utilities.WPF.Net.MarkupExtensions
         }
 
         //===========================================================================
-        //                            PUBLIC METHODS
+        //                            PROTECTED METHODS
         //===========================================================================
 
-        public override object ProvideValue( IServiceProvider serviceProvider )
+        /// <inheritdoc/>
+        protected override double CalculateValue( double a, double b )
         {
-            return A / B;
+            return ( a / b );
         }
     }
 }

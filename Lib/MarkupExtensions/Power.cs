@@ -3,32 +3,14 @@
 /// @license    See LICENSE.txt
 
 using System;
-using System.Windows.Markup;
 
 namespace Utilities.WPF.Net.MarkupExtensions
 {
     /// <summary>
     /// Markup extension that calculates the power of two numbers (A ^ B).
     /// </summary>
-    [MarkupExtensionReturnType( typeof( double ) )]
-    public class Power : MarkupExtension
+    public class Power : ArithmeticBinaryOperationBase
     {
-        //===========================================================================
-        //                           PUBLIC PROPERTIES
-        //===========================================================================
-
-        /// <summary>
-        /// First number.
-        /// </summary>
-        [ConstructorArgument( "a" )]
-        public double A { get; set; } = 0.0;
-
-        /// <summary>
-        /// Second number.
-        /// </summary>
-        [ConstructorArgument( "b" )]
-        public double B { get; set; } = 0.0;
-
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
         //===========================================================================
@@ -55,9 +37,10 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //                            PUBLIC METHODS
         //===========================================================================
 
-        public override object ProvideValue( IServiceProvider serviceProvider )
+        /// <inheritdoc/>
+        protected override double CalculateValue( double a, double b )
         {
-            return A - B;
+            return Math.Pow( a, b );
         }
     }
 }
