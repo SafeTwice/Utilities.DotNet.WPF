@@ -6,6 +6,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
@@ -28,34 +29,11 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
             if( ( m_internalBinding != null ) && ( m_internalBinding.Bindings.Count > 0 ) )
             {
-                if( serviceProvider == null )
-                {
-                    return this;
-                }
-
-                var valueProvider = serviceProvider.GetService( typeof( IProvideValueTarget ) ) as IProvideValueTarget;
-
-                var targetObject = valueProvider?.TargetObject;
-
-                if( ( targetObject == null ) || ( targetObject is OperationBase ) )
-                {
-                    return this;
-                }
-
-                var targetProperty = valueProvider?.TargetProperty;
-
-                if( ( targetObject is DependencyObject ) && ( targetProperty is DependencyProperty ) )
-                {
-                    return m_internalBinding.ProvideValue( serviceProvider );
-                }
-                else
-                {
-                    return this;
-                }
+                return ProvideDynamicValue( serviceProvider, m_internalBinding );
             }
             else
             {
-                return CalculateEffectiveValue( Array.Empty<object>().GetEnumerator() );
+                return ProvideStaticValue( serviceProvider );
             }
         }
 
@@ -132,7 +110,8 @@ namespace Utilities.WPF.Net.MarkupExtensions
         {
             public object? Convert( object[] bindingValues, Type targetType, object parameter, CultureInfo culture )
             {
-                return m_bindingBase.CalculateEffectiveValue( bindingValues.GetEnumerator() );
+                var calculatedValue = m_bindingBase.CalculateEffectiveValue( bindingValues.GetEnumerator() );
+                return ConvertValue( calculatedValue, targetType );
             }
 
             public object[]? ConvertBack( object value, Type[] targetTypes, object parameter, CultureInfo culture )
@@ -204,6 +183,74 @@ namespace Utilities.WPF.Net.MarkupExtensions
             }
 
             return CalculateValue( effectiveOperandValues );
+        }
+
+        private object ProvideDynamicValue( IServiceProvider serviceProvider, BindingBase binding )
+        {
+            if( serviceProvider == null )
+            {
+                return this;
+            }
+
+            var valueProvider = serviceProvider.GetService( typeof( IProvideValueTarget ) ) as IProvideValueTarget;
+
+            var targetObject = valueProvider?.TargetObject;
+
+            if( ( targetObject == null ) || ( targetObject is OperationBase ) )
+            {
+                return this;
+            }
+
+            var targetProperty = valueProvider?.TargetProperty;
+
+            if( ( targetObject is DependencyObject ) && ( targetProperty is DependencyProperty ) )
+            {
+                return binding.ProvideValue( serviceProvider );
+            }
+            else
+            {
+                return this;
+            }
+        }
+
+        private object? ProvideStaticValue( IServiceProvider serviceProvider )
+        {
+            var calculatedValue = CalculateEffectiveValue( Array.Empty<object>().GetEnumerator() );
+
+            if( ( serviceProvider != null ) && ( calculatedValue != null ) )
+            {
+                var valueProvider = serviceProvider.GetService( typeof( IProvideValueTarget ) ) as IProvideValueTarget;
+
+                var targetObject = valueProvider?.TargetObject;
+                var targetProperty = valueProvider?.TargetProperty;
+
+                if( ( targetObject is DependencyObject ) && ( targetProperty is DependencyProperty targetDependencyProperty ) )
+                {
+                    calculatedValue = ConvertValue( calculatedValue, targetDependencyProperty.PropertyType );
+                }
+                else if( !( targetObject is OperationBase ) && ( targetProperty is PropertyInfo targetPropertyInfo ) )
+                {
+                    calculatedValue = ConvertValue( calculatedValue, targetPropertyInfo.PropertyType );
+                }
+            }
+
+            return calculatedValue;
+        }
+
+        private static object? ConvertValue( object? value, Type targetType )
+        {
+            if( ( value != null ) && !value.GetType().IsInstanceOfType( targetType ) )
+            {
+                try
+                {
+                    return Convert.ChangeType( value, targetType );
+                }
+                catch
+                {
+                }
+            }
+
+            return value;
         }
 
         //===========================================================================
