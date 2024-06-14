@@ -24,10 +24,18 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         /// <inheritdoc cref="Binding.AsyncState"/>
         [DefaultValue( null )]
-        public object AsyncState
+        public object? AsyncState
         {
             get { return m_binding.AsyncState; }
             set { m_binding.AsyncState = value; }
+        }
+
+        /// <inheritdoc cref="Binding.BindingGroupName"/>
+        [DefaultValue( "" )]
+        public string BindingGroupName
+        {
+            get { return m_binding.BindingGroupName; }
+            set { m_binding.BindingGroupName = value; }
         }
 
         /// <inheritdoc cref="Binding.BindsDirectlyToSource"/>
@@ -40,15 +48,16 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         /// <inheritdoc cref="Binding.Converter"/>
         [DefaultValue( null )]
-        public IValueConverter Converter
+        public IValueConverter? Converter
         {
             get { return m_binding.Converter; }
             set { m_binding.Converter = value; }
         }
 
         /// <inheritdoc cref="Binding.ConverterCulture"/>
-        [TypeConverter( typeof( CultureInfoIetfLanguageTagConverter ) ), DefaultValue( null )]
-        public CultureInfo ConverterCulture
+        [DefaultValue( null )]
+        [TypeConverter( typeof( CultureInfoIetfLanguageTagConverter ) )]
+        public CultureInfo? ConverterCulture
         {
             get { return m_binding.ConverterCulture; }
             set { m_binding.ConverterCulture = value; }
@@ -56,15 +65,23 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         /// <inheritdoc cref="Binding.ConverterParameter"/>
         [DefaultValue( null )]
-        public object ConverterParameter
+        public object? ConverterParameter
         {
             get { return m_binding.ConverterParameter; }
             set { m_binding.ConverterParameter = value; }
         }
 
+        /// <inheritdoc cref="Binding.Delay"/>
+        [DefaultValue( 0 )]
+        public int Delay
+        {
+            get { return m_binding.Delay; }
+            set { m_binding.Delay = value; }
+        }
+
         /// <inheritdoc cref="Binding.ElementName"/>
         [DefaultValue( null )]
-        public string ElementName
+        public string? ElementName
         {
             get { return m_binding.ElementName; }
             set { m_binding.ElementName = value; }
@@ -72,7 +89,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         /// <inheritdoc cref="Binding.FallbackValue"/>
         [DefaultValue( null )]
-        public object FallbackValue
+        public object? FallbackValue
         {
             get { return m_binding.FallbackValue; }
             set { m_binding.FallbackValue = value; }
@@ -120,7 +137,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         /// <inheritdoc cref="Binding.Path"/>
         [DefaultValue( null )]
-        public PropertyPath Path
+        public PropertyPath? Path
         {
             get { return m_binding.Path; }
             set { m_binding.Path = value; }
@@ -128,7 +145,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         /// <inheritdoc cref="Binding.RelativeSource"/>
         [DefaultValue( null )]
-        public RelativeSource RelativeSource
+        public RelativeSource? RelativeSource
         {
             get { return m_binding.RelativeSource; }
             set { m_binding.RelativeSource = value; }
@@ -136,15 +153,32 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         /// <inheritdoc cref="Binding.Source"/>
         [DefaultValue( null )]
-        public object Source
+        public object? Source
         {
             get { return m_binding.Source; }
             set { m_binding.Source = value; }
         }
 
+        /// <inheritdoc cref="Binding.StringFormat"/>
+        [DefaultValue( null )]
+        public string? StringFormat
+        {
+            get { return m_binding.StringFormat; }
+            set { m_binding.StringFormat = value; }
+        }
+
+        /// <inheritdoc cref="Binding.TargetNullValue"/>
+        [DefaultValue( null )]
+        public object? TargetNullValue
+        {
+            get { return m_binding.TargetNullValue; }
+            set { m_binding.TargetNullValue = value; }
+        }
+
         /// <inheritdoc cref="Binding.UpdateSourceExceptionFilter"/>
+        [DefaultValue( null )]
         [DesignerSerializationVisibility( DesignerSerializationVisibility.Hidden )]
-        public UpdateSourceExceptionFilterCallback UpdateSourceExceptionFilter
+        public UpdateSourceExceptionFilterCallback? UpdateSourceExceptionFilter
         {
             get { return m_binding.UpdateSourceExceptionFilter; }
             set { m_binding.UpdateSourceExceptionFilter = value; }
@@ -174,19 +208,26 @@ namespace Utilities.WPF.Net.MarkupExtensions
             set { m_binding.ValidatesOnExceptions = value; }
         }
 
-        /// <inheritdoc cref="Binding.XPath"/>
-        [DefaultValue( null )]
-        public string XPath
+        /// <inheritdoc cref="Binding.ValidatesOnNotifyDataErrors"/>
+        [DefaultValue( false )]
+        public bool ValidatesOnNotifyDataErrors
         {
-            get { return m_binding.XPath; }
-            set { m_binding.XPath = value; }
+            get { return m_binding.ValidatesOnNotifyDataErrors; }
+            set { m_binding.ValidatesOnNotifyDataErrors = value; }
         }
 
         /// <inheritdoc cref="Binding.ValidationRules"/>
-        [DefaultValue( null )]
         public Collection<ValidationRule> ValidationRules
         {
             get { return m_binding.ValidationRules; }
+        }
+
+        /// <inheritdoc cref="Binding.XPath"/>
+        [DefaultValue( null )]
+        public string? XPath
+        {
+            get { return m_binding.XPath; }
+            set { m_binding.XPath = value; }
         }
 
         //===========================================================================
