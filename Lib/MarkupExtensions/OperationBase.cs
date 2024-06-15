@@ -3,40 +3,15 @@
 /// @license    See LICENSE.txt
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Markup;
 
 namespace Utilities.WPF.Net.MarkupExtensions
 {
     /// <summary>
     /// Base class for operations that combine multiple values.
     /// </summary>
-    public abstract class OperationBase : MarkupExtension
+    public abstract class OperationBase : MultiBindBase
     {
-        //===========================================================================
-        //                            PUBLIC METHODS
-        //===========================================================================
-
-        /// <inheritdoc/>
-        public override object? ProvideValue( IServiceProvider serviceProvider )
-        {
-            PrepareBinding();
-
-            if( ( m_internalBinding != null ) && ( m_internalBinding.Bindings.Count > 0 ) )
-            {
-                return ProvideDynamicValue( serviceProvider, m_internalBinding );
-            }
-            else
-            {
-                return ProvideStaticValue( serviceProvider );
-            }
-        }
-
         //===========================================================================
         //                          PROTECTED CONSTRUCTORS
         //===========================================================================
@@ -47,7 +22,10 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <param name="numOperands">Number of operands of the operation.</param>
         protected OperationBase( int numOperands )
         {
-            m_values = new object[ numOperands ];
+            for( int i = 0; i < numOperands; i++ )
+            {
+                Components.Add( null );
+            }
         }
 
         //===========================================================================
@@ -65,12 +43,12 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the operand identifier is out of range.</exception>
         protected object? GetOperandValue( int operandId )
         {
-            if( operandId < 0 || operandId >= m_values.Length )
+            if( ( operandId < 0 ) || ( operandId >= Components.Count ) )
             {
                 throw new ArgumentOutOfRangeException( nameof( operandId ) );
             }
 
-            return m_values[ operandId ];
+            return Components[ operandId ];
         }
 
         /// <summary>
@@ -84,12 +62,18 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the operand identifier is out of range.</exception>
         protected void SetOperandValue( int operandId, object? operandValue )
         {
-            if( operandId < 0 || operandId >= m_values.Length )
+            if( ( operandId < 0 ) || ( operandId >= Components.Count ) )
             {
                 throw new ArgumentOutOfRangeException( nameof( operandId ) );
             }
 
-            m_values[ operandId ] = operandValue;
+            Components[ operandId ] = operandValue;
+        }
+
+        /// <inheritdoc/>
+        protected override object? CalculateValue( object?[] componentValues, Type targetType, CultureInfo culture )
+        {
+            return CalculateValue( componentValues );
         }
 
         /// <summary>
@@ -101,181 +85,5 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <param name="operandValues">Array with the values of the operands.</param>
         /// <returns>Value of the operation.</returns>
         protected abstract object? CalculateValue( object?[] operandValues );
-
-        //===========================================================================
-        //                          PRIVATE NESTED TYPES
-        //===========================================================================
-
-        private class Converter : IMultiValueConverter
-        {
-            public object? Convert( object[] bindingValues, Type targetType, object parameter, CultureInfo culture )
-            {
-                var calculatedValue = m_bindingBase.CalculateEffectiveValue( bindingValues.GetEnumerator() );
-                return ConvertValue( calculatedValue, targetType );
-            }
-
-            public object[]? ConvertBack( object value, Type[] targetTypes, object parameter, CultureInfo culture )
-            {
-                return null;
-            }
-
-            public Converter( OperationBase bindingBase )
-            {
-                m_bindingBase = bindingBase;
-            }
-
-            OperationBase m_bindingBase;
-        }
-
-        //===========================================================================
-        //                            PRIVATE METHODS
-        //===========================================================================
-
-        private void PrepareBinding()
-        {
-            var bindings = GetBindings();
-
-            foreach( var binding in bindings )
-            {
-                InternalBinding.Bindings.Add( binding );
-            }
-        }
-
-        private IEnumerable<BindingBase> GetBindings()
-        {
-            foreach( var value in m_values )
-            {
-                if( value is Binding binding )
-                {
-                    yield return binding;
-                }
-                else if( value is OperationBase customBinding )
-                {
-                    foreach( var nestedBinding in customBinding.GetBindings() )
-                    {
-                        yield return nestedBinding;
-                    }
-                }
-            }
-        }
-
-        private object? CalculateEffectiveValue( IEnumerator bindingValues )
-        {
-            var effectiveOperandValues = new object?[ m_values.Length ];
-
-            for( int i = 0; i < m_values.Length; i++ )
-            {
-                var operandValue = m_values[ i ];
-
-                if( operandValue is OperationBase customBinding )
-                {
-                    effectiveOperandValues[ i ] = customBinding.CalculateEffectiveValue( bindingValues );
-                }
-                else if( operandValue is Binding binding )
-                {
-                    bindingValues.MoveNext();
-                    effectiveOperandValues[ i ] = bindingValues.Current;
-                }
-                else
-                {
-                    effectiveOperandValues[ i ] = operandValue;
-                }
-            }
-
-            return CalculateValue( effectiveOperandValues );
-        }
-
-        private object ProvideDynamicValue( IServiceProvider serviceProvider, BindingBase binding )
-        {
-            if( serviceProvider == null )
-            {
-                return this;
-            }
-
-            var valueProvider = serviceProvider.GetService( typeof( IProvideValueTarget ) ) as IProvideValueTarget;
-
-            var targetObject = valueProvider?.TargetObject;
-
-            if( ( targetObject == null ) || ( targetObject is OperationBase ) )
-            {
-                return this;
-            }
-
-            var targetProperty = valueProvider?.TargetProperty;
-
-            if( ( targetObject is DependencyObject ) && ( targetProperty is DependencyProperty ) )
-            {
-                return binding.ProvideValue( serviceProvider );
-            }
-            else
-            {
-                return this;
-            }
-        }
-
-        private object? ProvideStaticValue( IServiceProvider serviceProvider )
-        {
-            var calculatedValue = CalculateEffectiveValue( Array.Empty<object>().GetEnumerator() );
-
-            if( ( serviceProvider != null ) && ( calculatedValue != null ) )
-            {
-                var valueProvider = serviceProvider.GetService( typeof( IProvideValueTarget ) ) as IProvideValueTarget;
-
-                var targetObject = valueProvider?.TargetObject;
-                var targetProperty = valueProvider?.TargetProperty;
-
-                if( ( targetObject is DependencyObject ) && ( targetProperty is DependencyProperty targetDependencyProperty ) )
-                {
-                    calculatedValue = ConvertValue( calculatedValue, targetDependencyProperty.PropertyType );
-                }
-                else if( !( targetObject is OperationBase ) && ( targetProperty is PropertyInfo targetPropertyInfo ) )
-                {
-                    calculatedValue = ConvertValue( calculatedValue, targetPropertyInfo.PropertyType );
-                }
-            }
-
-            return calculatedValue;
-        }
-
-        private static object? ConvertValue( object? value, Type targetType )
-        {
-            if( ( value != null ) && !value.GetType().IsInstanceOfType( targetType ) )
-            {
-                try
-                {
-                    return Convert.ChangeType( value, targetType );
-                }
-                catch
-                {
-                }
-            }
-
-            return value;
-        }
-
-        //===========================================================================
-        //                           PRIVATE PROPERTIES
-        //===========================================================================
-
-        private MultiBinding InternalBinding
-        {
-            get
-            {
-                m_internalBinding ??= new MultiBinding()
-                {
-                    Mode = BindingMode.OneWay,
-                    Converter = new Converter( this ),
-                };
-                return m_internalBinding;
-            }
-        }
-
-        //===========================================================================
-        //                           PRIVATE ATTRIBUTES
-        //===========================================================================
-
-        private MultiBinding? m_internalBinding;
-
-        private object?[] m_values;
     }
 }

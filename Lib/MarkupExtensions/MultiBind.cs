@@ -2,59 +2,46 @@
 /// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
-using System;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows;
 using System.Windows.Markup;
+using System.Collections.ObjectModel;
+using System.Windows.Controls;
+using System;
 
 namespace Utilities.WPF.Net.MarkupExtensions
 {
     /// <summary>
-    /// <see cref="Binding"/> that can be passed as a parameter to a <see cref="MarkupExtension"/>.
+    /// <see cref="MultiBinding"/> that can be passed as a parameter to a <see cref="MarkupExtension"/>.
     /// </summary>
-    public sealed class Bind : MarkupExtension
+    [ContentProperty( nameof( Components ) )]
+    public sealed class MultiBind : MultiBindBase, IAddChild
     {
         //===========================================================================
         //                           PUBLIC PROPERTIES
         //===========================================================================
 
-        /// <inheritdoc cref="Binding.AsyncState"/>
-        [DefaultValue( null )]
-        public object? AsyncState
-        {
-            get { return InternalBinding.AsyncState; }
-            set { InternalBinding.AsyncState = value; }
-        }
+        /// <summary>
+        /// Collection of components that will be combined by the multi-binding.
+        /// </summary>
+        [DesignerSerializationVisibility( DesignerSerializationVisibility.Content )]
+        public new Collection<object?> Components => base.Components;
 
-        /// <inheritdoc cref="BindingBase.BindingGroupName"/>
+        /// <inheritdoc cref="BindingBase.BindingGroupName "/>
         [DefaultValue( "" )]
         public string BindingGroupName
         {
-            get { return InternalBinding.BindingGroupName; }
-            set { InternalBinding.BindingGroupName = value; }
+            get => InternalBinding.BindingGroupName;
+            set => InternalBinding.BindingGroupName = value;
         }
 
-        /// <inheritdoc cref="Binding.BindsDirectlyToSource"/>
-        [DefaultValue( false )]
-        public bool BindsDirectlyToSource
-        {
-            get { return InternalBinding.BindsDirectlyToSource; }
-            set { InternalBinding.BindsDirectlyToSource = value; }
-        }
-
-        /// <inheritdoc cref="Binding.Converter"/>
+        /// <inheritdoc cref="MultiBinding.Converter"/>
         [DefaultValue( null )]
-        public IValueConverter? Converter
-        {
-            get { return InternalBinding.Converter; }
-            set { InternalBinding.Converter = value; }
-        }
+        public IMultiValueConverter? Converter { get; set; }
 
-        /// <inheritdoc cref="Binding.ConverterCulture"/>
+        /// <inheritdoc cref="MultiBinding.ConverterCulture"/>
         [DefaultValue( null )]
         [TypeConverter( typeof( CultureInfoIetfLanguageTagConverter ) )]
         public CultureInfo? ConverterCulture
@@ -65,11 +52,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         /// <inheritdoc cref="Binding.ConverterParameter"/>
         [DefaultValue( null )]
-        public object? ConverterParameter
-        {
-            get { return InternalBinding.ConverterParameter; }
-            set { InternalBinding.ConverterParameter = value; }
-        }
+        public object? ConverterParameter { get; set; }
 
         /// <inheritdoc cref="BindingBase.Delay"/>
         [DefaultValue( 0 )]
@@ -79,28 +62,12 @@ namespace Utilities.WPF.Net.MarkupExtensions
             set { InternalBinding.Delay = value; }
         }
 
-        /// <inheritdoc cref="Binding.ElementName"/>
-        [DefaultValue( null )]
-        public string? ElementName
-        {
-            get { return InternalBinding.ElementName; }
-            set { InternalBinding.ElementName = value; }
-        }
-
         /// <inheritdoc cref="BindingBase.FallbackValue"/>
         [DefaultValue( null )]
         public object? FallbackValue
         {
             get { return InternalBinding.FallbackValue; }
             set { InternalBinding.FallbackValue = value; }
-        }
-
-        /// <inheritdoc cref="Binding.IsAsync"/>
-        [DefaultValue( false )]
-        public bool IsAsync
-        {
-            get { return InternalBinding.IsAsync; }
-            set { InternalBinding.IsAsync = value; }
         }
 
         /// <inheritdoc cref="Binding.Mode"/>
@@ -135,37 +102,9 @@ namespace Utilities.WPF.Net.MarkupExtensions
             set { InternalBinding.NotifyOnValidationError = value; }
         }
 
-        /// <inheritdoc cref="Binding.Path"/>
-        [DefaultValue( null )]
-        public PropertyPath? Path
-        {
-            get { return InternalBinding.Path; }
-            set { InternalBinding.Path = value; }
-        }
-
-        /// <inheritdoc cref="Binding.RelativeSource"/>
-        [DefaultValue( null )]
-        public RelativeSource? RelativeSource
-        {
-            get { return InternalBinding.RelativeSource; }
-            set { InternalBinding.RelativeSource = value; }
-        }
-
-        /// <inheritdoc cref="Binding.Source"/>
-        [DefaultValue( null )]
-        public object? Source
-        {
-            get { return InternalBinding.Source; }
-            set { InternalBinding.Source = value; }
-        }
-
         /// <inheritdoc cref="BindingBase.StringFormat"/>
         [DefaultValue( null )]
-        public string? StringFormat
-        {
-            get { return InternalBinding.StringFormat; }
-            set { InternalBinding.StringFormat = value; }
-        }
+        public string? StringFormat { get; set; }
 
         /// <inheritdoc cref="BindingBase.TargetNullValue"/>
         [DefaultValue( null )]
@@ -222,28 +161,71 @@ namespace Utilities.WPF.Net.MarkupExtensions
             get { return InternalBinding.ValidationRules; }
         }
 
-        /// <inheritdoc cref="Binding.XPath"/>
-        [DefaultValue( null )]
-        public string? XPath
-        {
-            get { return InternalBinding.XPath; }
-            set { InternalBinding.XPath = value; }
-        }
-
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
         //===========================================================================
 
-        /// <inheritdoc cref="Binding.Binding()"/>
-        public Bind()
+        /// <summary>
+        /// Constructor for a MultiBind which components are defined as XAML content.
+        /// </summary>
+        public MultiBind()
         {
-            InternalBinding = new Binding();
+            InternalBinding.Mode = BindingMode.Default;
         }
 
-        /// <inheritdoc cref="Binding.Binding(string)"/>
-        public Bind( string path )
+        /// <summary>
+        /// Constructor for a MultiBind with a single component.
+        /// </summary>
+        /// <param name="p1">Single component.</param>
+        public MultiBind( object? p1 ) : this()
         {
-            InternalBinding = new Binding( path );
+            Components.Add( p1 );
+        }
+
+        /// <summary>
+        /// Constructor for a MultiBind with two components.
+        /// </summary>
+        /// <param name="p1">First component.</param>
+        /// <param name="p2">Second component.</param>
+        public MultiBind( object? p1, object? p2 ) : this( p1 )
+        {
+            Components.Add( p2 );
+        }
+
+        /// <summary>
+        /// Constructor for a MultiBind with three components.
+        /// </summary>
+        /// <param name="p1">First component.</param>
+        /// <param name="p2">Second component.</param>
+        /// <param name="p3">Third component.</param>
+        public MultiBind( object? p1, object? p2, object? p3 ) : this( p1, p2 )
+        {
+            Components.Add( p3 );
+        }
+
+        /// <summary>
+        /// Constructor for a MultiBind with four components.
+        /// </summary>
+        /// <param name="p1">First component.</param>
+        /// <param name="p2">Second component.</param>
+        /// <param name="p3">Third component.</param>
+        /// <param name="p4">Fourth component.</param>
+        public MultiBind( object? p1, object? p2, object? p3, object? p4 ) : this( p1, p2, p3 )
+        {
+            Components.Add( p4 );
+        }
+
+        /// <summary>
+        /// Constructor for a MultiBind with five components.
+        /// </summary>
+        /// <param name="p1">First component.</param>
+        /// <param name="p2">Second component.</param>
+        /// <param name="p3">Third component.</param>
+        /// <param name="p4">Fourth component.</param>
+        /// <param name="p5">Fifth component.</param>
+        public MultiBind( object? p1, object? p2, object? p3, object? p4, object? p5 ) : this( p1, p2, p3, p4 )
+        {
+            Components.Add( p5 );
         }
 
         //===========================================================================
@@ -251,31 +233,48 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        public override object ProvideValue( IServiceProvider serviceProvider )
+        void IAddChild.AddChild( object value )
         {
-            if( serviceProvider == null )
+            base.Components.Add( value );
+        }
+
+        /// <inheritdoc/>
+        void IAddChild.AddText( string text )
+        {
+            var trimmedText = text.Trim();
+            if( trimmedText.Length > 0 )
             {
-                return this;
+                base.Components.Add( trimmedText );
             }
-
-            var provideValueTarget = serviceProvider.GetService( typeof( IProvideValueTarget ) ) as IProvideValueTarget;
-
-            if( provideValueTarget != null )
-            {
-                if( ( provideValueTarget.TargetObject is DependencyObject ) &&
-                    ( provideValueTarget.TargetProperty is DependencyProperty ) )
-                {
-                    return InternalBinding.ProvideValue( serviceProvider );
-                }
-            }
-
-            return this;
         }
 
         //===========================================================================
-        //                          INTERNAL PROPERTIES
+        //                            PROTECTED METHODS
         //===========================================================================
 
-        internal Binding InternalBinding { get; }
+        /// <inheritdoc/>
+        protected override object? CalculateValue( object?[] componentValues, Type targetType, CultureInfo culture )
+        {
+            object? value = null;
+
+            if( Converter != null )
+            {
+                value = Converter?.Convert( componentValues, targetType, ConverterParameter, culture );
+
+                if( StringFormat != null )
+                {
+                    value = String.Format( culture, StringFormat, value );
+                }
+            }
+            else
+            {
+                if( StringFormat != null )
+                {
+                    value = String.Format( culture, StringFormat, componentValues );
+                }
+            }
+
+            return value;
+        }
     }
 }
