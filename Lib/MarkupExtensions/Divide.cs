@@ -7,7 +7,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
     /// <summary>
     /// Markup extension that divides two numbers (A / B).
     /// </summary>
-    public class Divide : ArithmeticBinaryOperationBase
+    public sealed class Divide : ArithmeticBinaryOperationBase
     {
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS

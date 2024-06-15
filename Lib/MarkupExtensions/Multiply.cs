@@ -7,7 +7,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
     /// <summary>
     /// Markup extension that multiplies two numbers.
     /// </summary>
-    public class Multiply : ArithmeticBinaryOperationBase
+    public sealed class Multiply : ArithmeticBinaryOperationBase
     {
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS

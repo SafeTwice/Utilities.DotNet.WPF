@@ -9,7 +9,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
     /// <summary>
     /// Markup extension that calculates the power of two numbers (A ^ B).
     /// </summary>
-    public class Power : ArithmeticBinaryOperationBase
+    public sealed class Power : ArithmeticBinaryOperationBase
     {
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS

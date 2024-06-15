@@ -7,7 +7,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
     /// <summary>
     /// Markup extension that subtracts two numbers (A - B).
     /// </summary>
-    public class Subtract : ArithmeticBinaryOperationBase
+    public sealed class Subtract : ArithmeticBinaryOperationBase
     {
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS

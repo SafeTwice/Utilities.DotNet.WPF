@@ -11,7 +11,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
     /// Markup extension that converts an object to a string.
     /// </summary>
     [MarkupExtensionReturnType( typeof( string ) )]
-    public class ToString : OperationBase
+    public sealed class ToString : OperationBase
     {
         //===========================================================================
         //                           PUBLIC PROPERTIES
@@ -52,7 +52,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected sealed override object CalculateValue( object?[] operandValues )
+        protected override object CalculateValue( object?[] operandValues )
         {
             return Convert.ToString( operandValues[ VALUE_INDEX ] )!;
         }
