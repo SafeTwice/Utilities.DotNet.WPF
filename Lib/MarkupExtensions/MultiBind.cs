@@ -14,7 +14,9 @@ using System;
 namespace Utilities.WPF.Net.MarkupExtensions
 {
     /// <summary>
-    /// <see cref="MultiBinding"/> that can be passed as a parameter to a <see cref="MarkupExtension"/>.
+    /// <see cref="MultiBinding"/> that can be passed as a parameter to a <see cref="MarkupExtension"/> and
+    /// that accepts as components both <see cref="Bind"/> and <see cref="MultiBind"/> bindings, values provided
+    /// by <see cref="BindingMarkupExtensionBase">binding markup extensions</see>, and static (constant) XAML values.
     /// </summary>
     [ContentProperty( nameof( Components ) )]
     public sealed class MultiBind : MultiBindBase, IAddChild
@@ -253,24 +255,24 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected override object? CalculateValue( object?[] componentValues, Type targetType, CultureInfo culture )
+        protected override object? CalculateValue( object?[] componentValues, Type targetType, CultureInfo targetCulture )
         {
             object? value = null;
 
             if( Converter != null )
             {
-                value = Converter?.Convert( componentValues, targetType, ConverterParameter, culture );
+                value = Converter?.Convert( componentValues, targetType, ConverterParameter, targetCulture );
 
                 if( StringFormat != null )
                 {
-                    value = String.Format( culture, StringFormat, value );
+                    value = String.Format( targetCulture, StringFormat, value );
                 }
             }
             else
             {
                 if( StringFormat != null )
                 {
-                    value = String.Format( culture, StringFormat, componentValues );
+                    value = String.Format( targetCulture, StringFormat, componentValues );
                 }
             }
 

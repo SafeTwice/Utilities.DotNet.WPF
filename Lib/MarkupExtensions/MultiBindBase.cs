@@ -15,7 +15,7 @@ using System.Windows.Markup;
 namespace Utilities.WPF.Net.MarkupExtensions
 {
     /// <summary>
-    /// Base class for multi-bindings and operations that combine multiple values.
+    /// Base class for multi-bindings and binding markup extensions that combine multiple components (values).
     /// </summary>
     public abstract class MultiBindBase : MarkupExtension
     {
@@ -60,8 +60,22 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// Must be implemented by derived classes to perform the actual calculation.
         /// </remarks>
         /// <param name="componentValues">Array with the effective values of the components.</param>
+        /// <param name="targetType">Type of the target.</param>
+        /// <param name="targetCulture">Culture to use to convert values to the target.</param>
         /// <returns>Value of the binding.</returns>
-        protected abstract object? CalculateValue( object?[] componentValues, Type targetType, CultureInfo culture );
+        protected abstract object? CalculateValue( object?[] componentValues, Type targetType, CultureInfo targetCulture );
+
+        /// <summary>
+        /// Converts the value of a component to the type expected by the calculation (if necessary).
+        /// </summary>
+        /// <param name="index">Index of the component.</param>
+        /// <param name="value">Effective input value of the component.</param>
+        /// <param name="culture">Culture to use to convert the value.</param>
+        /// <returns>Converted value.</returns>
+        protected virtual object? ConvertComponentValue( int index, object? value, CultureInfo culture )
+        {
+            return value;
+        }
 
         //===========================================================================
         //                          PRIVATE NESTED TYPES
@@ -74,7 +88,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
                 var bindingBase = (MultiBindBase) parameter!;
 
                 var calculatedValue = bindingBase.CalculateEffectiveValue( bindingValues.GetEnumerator(), targetType, culture );
-                return ConvertValue( calculatedValue, targetType );
+                return ConvertValue( calculatedValue, targetType, culture );
             }
 
             public object[]? ConvertBack( object value, Type[] targetTypes, object? parameter, CultureInfo culture )
@@ -115,30 +129,46 @@ namespace Utilities.WPF.Net.MarkupExtensions
             }
         }
 
-        private object? CalculateEffectiveValue( IEnumerator bindingValues, Type targetType, CultureInfo culture )
+        private object? CalculateEffectiveValue( IEnumerator bindingValues, Type targetType, CultureInfo targetCulture )
         {
             var effectiveOperandValues = new object?[ Components.Count ];
 
             for( int i = 0; i < Components.Count; i++ )
             {
-                var operandValue = Components[ i ];
+                var componentValue = Components[ i ];
+                object? effectiveComponentValue;
+                CultureInfo componentCulture;
 
-                if( operandValue is MultiBindBase customBinding )
+                if( componentValue is MultiBindBase customBinding )
                 {
-                    effectiveOperandValues[ i ] = customBinding.CalculateEffectiveValue( bindingValues, targetType, culture );
+                    effectiveComponentValue = customBinding.CalculateEffectiveValue( bindingValues, targetType, targetCulture );
+                    componentCulture = targetCulture;
                 }
-                else if( operandValue is Bind binding )
+                else if( componentValue is Bind binding )
                 {
                     bindingValues.MoveNext();
-                    effectiveOperandValues[ i ] = bindingValues.Current;
+                    effectiveComponentValue = bindingValues.Current;
+                    componentCulture = binding.ConverterCulture ?? targetCulture;
                 }
                 else
                 {
-                    effectiveOperandValues[ i ] = operandValue;
+                    effectiveComponentValue = componentValue;
+                    componentCulture = CultureInfo.InvariantCulture;
                 }
+
+                if( effectiveComponentValue == DependencyProperty.UnsetValue )
+                {
+                    return DependencyProperty.UnsetValue;
+                }
+                else if( effectiveComponentValue == Binding.DoNothing )
+                {
+                    return Binding.DoNothing;
+                }
+
+                effectiveOperandValues[ i ] = ConvertComponentValue( i, effectiveComponentValue, componentCulture );
             }
 
-            return CalculateValue( effectiveOperandValues, targetType, culture );
+            return CalculateValue( effectiveOperandValues, targetType, targetCulture );
         }
 
         private object ProvideDynamicValue( IServiceProvider serviceProvider, BindingBase binding )
@@ -191,23 +221,25 @@ namespace Utilities.WPF.Net.MarkupExtensions
                 targetType = typeof( object );
             }
 
-            var calculatedValue = CalculateEffectiveValue( Array.Empty<object>().GetEnumerator(), targetType, CultureInfo.InvariantCulture );
+            var targetCulture = GetTargetCulture( targetObject );
+
+            var calculatedValue = CalculateEffectiveValue( Array.Empty<object>().GetEnumerator(), targetType, targetCulture );
 
             if( ( calculatedValue != null ) && ( targetType != typeof( object ) ) )
             {
-                calculatedValue = ConvertValue( calculatedValue, targetType );
+                calculatedValue = ConvertValue( calculatedValue, targetType, targetCulture );
             }
 
             return calculatedValue;
         }
 
-        private static object? ConvertValue( object? value, Type targetType )
+        private static object? ConvertValue( object? value, Type targetType, CultureInfo culture )
         {
             if( ( value != null ) && !targetType.IsAssignableFrom( value.GetType() ) )
             {
                 try
                 {
-                    return Convert.ChangeType( value, targetType );
+                    return Convert.ChangeType( value, targetType, culture );
                 }
                 catch
                 {
@@ -215,6 +247,27 @@ namespace Utilities.WPF.Net.MarkupExtensions
             }
 
             return value;
+        }
+
+        private CultureInfo GetTargetCulture( object? targetObject )
+        {
+            CultureInfo? culture = null;
+
+            if( m_internalBinding != null )
+            {
+                culture = m_internalBinding.ConverterCulture;
+            }
+
+            if( ( culture == null ) && ( targetObject is FrameworkElement frameworkElement ) )
+            {
+                var language = frameworkElement.GetValue( FrameworkElement.LanguageProperty ) as XmlLanguage;
+                if( language != null )
+                {
+                    culture = language.GetSpecificCulture();
+                }
+            }
+
+            return culture ?? CultureInfo.InvariantCulture;
         }
 
         //===========================================================================

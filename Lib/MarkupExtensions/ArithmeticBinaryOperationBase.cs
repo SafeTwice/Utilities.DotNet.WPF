@@ -30,36 +30,21 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected override sealed object? CalculateValue( object? aObject, object? bObject )
+        protected override sealed object? CalculateValue( object? a, object? b )
         {
-            if( ( aObject == null ) || ( bObject == null ) )
+            if( ( a == null ) || ( b == null ) )
             {
                 return null;
             }
 
-            double aNumber;
-            double bNumber;
-
-            try
-            {
-                aNumber = Convert.ToDouble( aObject, CultureInfo.InvariantCulture );
-            }
-            catch
-            {
-                return null;
-            }
-
-            try
-            {
-                bNumber = Convert.ToDouble( bObject, CultureInfo.InvariantCulture );
-            }
-            catch
-            {
-                return null;
-            }
-
-            return CalculateValue( aNumber, bNumber );
+            return CalculateValue( (double) a, (double) b );
         }
+
+        /// <inheritdoc/>
+        protected override object? ConvertOperandAValue( object? value, CultureInfo culture ) => ConvertOperandValue( value, culture );
+
+        /// <inheritdoc/>
+        protected override object? ConvertOperandBValue( object? value, CultureInfo culture ) => ConvertOperandValue( value, culture );
 
         /// <summary>
         /// Calculates the value of the operation.
@@ -71,5 +56,28 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <param name="b">Right operand value.</param>
         /// <returns></returns>
         protected abstract double CalculateValue( double a, double b );
+
+        //===========================================================================
+        //                            PRIVATE METHODS
+        //===========================================================================
+
+        private object? ConvertOperandValue( object? value, CultureInfo culture )
+        {
+            if( ( value == null ) || ( value.GetType() == typeof( double ) ) )
+            {
+                return value;
+            }
+            else
+            {
+                try
+                {
+                    return Convert.ToDouble( value, culture );
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
     }
 }

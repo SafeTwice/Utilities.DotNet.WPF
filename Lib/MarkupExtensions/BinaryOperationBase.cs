@@ -2,33 +2,35 @@
 /// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
+using System.Globalization;
+
 namespace Utilities.WPF.Net.MarkupExtensions
 {
     /// <summary>
     /// Base class for binary operations.
     /// </summary>
-    public abstract class BinaryOperationBase : OperationBase
+    public abstract class BinaryOperationBase : BindingMarkupExtensionBase
     {
         //===========================================================================
         //                           PUBLIC PROPERTIES
         //===========================================================================
 
         /// <summary>
-        /// Left operand.
+        /// First operand.
         /// </summary>
         public object? A
         {
-            get => GetOperandValue( A_INDEX );
-            set => SetOperandValue( A_INDEX, value );
+            get => GetParameterValue( A_INDEX );
+            set => SetParameterValue( A_INDEX, value );
         }
 
         /// <summary>
-        /// Right operand.
+        /// Second operand.
         /// </summary>
         public object? B
         {
-            get => GetOperandValue( B_INDEX );
-            set => SetOperandValue( B_INDEX, value );
+            get => GetParameterValue( B_INDEX );
+            set => SetParameterValue( B_INDEX, value );
         }
 
         //===========================================================================
@@ -38,7 +40,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <summary>
         /// Constructor.
         /// </summary>
-        protected BinaryOperationBase() : base( ITEM_COUNT )
+        protected BinaryOperationBase() : base( NUM_OPERANDS )
         {
         }
 
@@ -47,10 +49,10 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected sealed override object? CalculateValue( object?[] itemValues )
+        protected sealed override object? CalculateValue( object?[] parameterValues, CultureInfo targetCulture )
         {
-            var a = itemValues[ A_INDEX ];
-            var b = itemValues[ B_INDEX ];
+            var a = parameterValues[ A_INDEX ];
+            var b = parameterValues[ B_INDEX ];
 
             return CalculateValue( a, b );
         }
@@ -61,16 +63,43 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <remarks>
         /// Must be implemented by derived classes to perform the actual calculation.
         /// </remarks>
-        /// <param name="a">Left operand value.</param>
-        /// <param name="b">Right operand value.</param>
+        /// <param name="a">First operand value.</param>
+        /// <param name="b">Second operand value.</param>
         /// <returns></returns>
         protected abstract object? CalculateValue( object? a, object? b );
+
+        /// <inheritdoc/>
+        protected sealed override object? ConvertParameterValue( int parameterId, object? parameterValue, CultureInfo culture )
+        {
+            return parameterId switch
+            {
+                A_INDEX => ConvertOperandAValue( parameterValue, culture ),
+                B_INDEX => ConvertOperandBValue( parameterValue, culture ),
+                _ => null,
+            };
+        }
+
+        /// <summary>
+        /// Converts the value of the first operand to the type expected by the calculation (if necessary).
+        /// </summary>
+        /// <param name="value">Effective input value of the operand.</param>
+        /// <param name="culture">Culture to use to convert the value.</param>
+        /// <returns>Converted value.</returns>
+        protected abstract object? ConvertOperandAValue( object? value, CultureInfo culture );
+
+        /// <summary>
+        /// Converts the value of the second operand to the type expected by the calculation (if necessary).
+        /// </summary>
+        /// <param name="value">Effective input value of the operand.</param>
+        /// <param name="culture">Culture to use to convert the value.</param>
+        /// <returns>Converted value.</returns>
+        protected abstract object? ConvertOperandBValue( object? value, CultureInfo culture );
 
         //===========================================================================
         //                           PRIVATE CONSTANTS
         //===========================================================================
 
-        private const int ITEM_COUNT = 2;
+        private const int NUM_OPERANDS = 2;
         private const int A_INDEX = 0;
         private const int B_INDEX = 1;
     }
