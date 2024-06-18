@@ -30,14 +30,20 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected override sealed object? CalculateValue( object? a, object? b )
+        protected override sealed (object? value, CultureInfo culture) CalculateValue( object? a, object? b )
         {
+            object? operationValue;
+
             if( ( a == null ) || ( b == null ) )
             {
-                return null;
+                operationValue = null;
+            }
+            else
+            {
+                operationValue = CalculateValue( (double) a, (double) b );
             }
 
-            return CalculateValue( (double) a, (double) b );
+            return (operationValue, CultureInfo.InvariantCulture);
         }
 
         /// <inheritdoc/>

@@ -49,10 +49,10 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected sealed override object? CalculateValue( object?[] parameterValues, CultureInfo targetCulture )
+        protected sealed override (object? value, CultureInfo culture) CalculateValue( object?[] parameterValues, CultureInfo[] parameterCultures, CultureInfo targetCulture )
         {
-            var a = parameterValues[ A_INDEX ];
-            var b = parameterValues[ B_INDEX ];
+            var a = ConvertOperandAValue( parameterValues[ A_INDEX ], parameterCultures[ A_INDEX ] );
+            var b = ConvertOperandBValue( parameterValues[ B_INDEX ], parameterCultures[ B_INDEX ] );
 
             return CalculateValue( a, b );
         }
@@ -66,18 +66,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <param name="a">First operand value.</param>
         /// <param name="b">Second operand value.</param>
         /// <returns></returns>
-        protected abstract object? CalculateValue( object? a, object? b );
-
-        /// <inheritdoc/>
-        protected sealed override object? ConvertParameterValue( int parameterId, object? parameterValue, CultureInfo culture )
-        {
-            return parameterId switch
-            {
-                A_INDEX => ConvertOperandAValue( parameterValue, culture ),
-                B_INDEX => ConvertOperandBValue( parameterValue, culture ),
-                _ => null,
-            };
-        }
+        protected abstract (object? value, CultureInfo culture) CalculateValue( object? a, object? b );
 
         /// <summary>
         /// Converts the value of the first operand to the type expected by the calculation (if necessary).

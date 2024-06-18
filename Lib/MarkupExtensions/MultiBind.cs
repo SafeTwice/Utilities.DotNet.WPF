@@ -33,11 +33,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         /// <inheritdoc cref="BindingBase.BindingGroupName "/>
         [DefaultValue( "" )]
-        public string BindingGroupName
-        {
-            get => InternalBinding.BindingGroupName;
-            set => InternalBinding.BindingGroupName = value;
-        }
+        public string BindingGroupName { get; set; } = string.Empty;
 
         /// <inheritdoc cref="MultiBinding.Converter"/>
         [DefaultValue( null )]
@@ -46,11 +42,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <inheritdoc cref="MultiBinding.ConverterCulture"/>
         [DefaultValue( null )]
         [TypeConverter( typeof( CultureInfoIetfLanguageTagConverter ) )]
-        public CultureInfo? ConverterCulture
-        {
-            get { return InternalBinding.ConverterCulture; }
-            set { InternalBinding.ConverterCulture = value; }
-        }
+        public CultureInfo? ConverterCulture { get; set; }
 
         /// <inheritdoc cref="Binding.ConverterParameter"/>
         [DefaultValue( null )]
@@ -58,51 +50,27 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         /// <inheritdoc cref="BindingBase.Delay"/>
         [DefaultValue( 0 )]
-        public int Delay
-        {
-            get { return InternalBinding.Delay; }
-            set { InternalBinding.Delay = value; }
-        }
+        public int Delay { get; set; }
 
         /// <inheritdoc cref="BindingBase.FallbackValue"/>
         [DefaultValue( null )]
-        public object? FallbackValue
-        {
-            get { return InternalBinding.FallbackValue; }
-            set { InternalBinding.FallbackValue = value; }
-        }
+        public object? FallbackValue { get; set; }
 
         /// <inheritdoc cref="Binding.Mode"/>
         [DefaultValue( BindingMode.Default )]
-        public BindingMode Mode
-        {
-            get { return InternalBinding.Mode; }
-            set { InternalBinding.Mode = value; }
-        }
+        public BindingMode Mode { get; set; }
 
         /// <inheritdoc cref="Binding.NotifyOnSourceUpdated"/>
         [DefaultValue( false )]
-        public bool NotifyOnSourceUpdated
-        {
-            get { return InternalBinding.NotifyOnSourceUpdated; }
-            set { InternalBinding.NotifyOnSourceUpdated = value; }
-        }
+        public bool NotifyOnSourceUpdated { get; set; }
 
         /// <inheritdoc cref="Binding.NotifyOnTargetUpdated"/>
         [DefaultValue( false )]
-        public bool NotifyOnTargetUpdated
-        {
-            get { return InternalBinding.NotifyOnTargetUpdated; }
-            set { InternalBinding.NotifyOnTargetUpdated = value; }
-        }
+        public bool NotifyOnTargetUpdated { get; set; }
 
         /// <inheritdoc cref="Binding.NotifyOnValidationError"/>
         [DefaultValue( false )]
-        public bool NotifyOnValidationError
-        {
-            get { return InternalBinding.NotifyOnValidationError; }
-            set { InternalBinding.NotifyOnValidationError = value; }
-        }
+        public bool NotifyOnValidationError { get; set; }
 
         /// <inheritdoc cref="BindingBase.StringFormat"/>
         [DefaultValue( null )]
@@ -110,58 +78,31 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         /// <inheritdoc cref="BindingBase.TargetNullValue"/>
         [DefaultValue( null )]
-        public object? TargetNullValue
-        {
-            get { return InternalBinding.TargetNullValue; }
-            set { InternalBinding.TargetNullValue = value; }
-        }
+        public object? TargetNullValue { get; set; }
 
         /// <inheritdoc cref="Binding.UpdateSourceExceptionFilter"/>
         [DefaultValue( null )]
         [DesignerSerializationVisibility( DesignerSerializationVisibility.Hidden )]
-        public UpdateSourceExceptionFilterCallback? UpdateSourceExceptionFilter
-        {
-            get { return InternalBinding.UpdateSourceExceptionFilter; }
-            set { InternalBinding.UpdateSourceExceptionFilter = value; }
-        }
+        public UpdateSourceExceptionFilterCallback? UpdateSourceExceptionFilter { get; set; }
 
         /// <inheritdoc cref="Binding.UpdateSourceTrigger"/>
         [DefaultValue( UpdateSourceTrigger.Default )]
-        public UpdateSourceTrigger UpdateSourceTrigger
-        {
-            get { return InternalBinding.UpdateSourceTrigger; }
-            set { InternalBinding.UpdateSourceTrigger = value; }
-        }
+        public UpdateSourceTrigger UpdateSourceTrigger { get; set; }
 
         /// <inheritdoc cref="Binding.ValidatesOnDataErrors"/>
         [DefaultValue( false )]
-        public bool ValidatesOnDataErrors
-        {
-            get { return InternalBinding.ValidatesOnDataErrors; }
-            set { InternalBinding.ValidatesOnDataErrors = value; }
-        }
+        public bool ValidatesOnDataErrors { get; set; }
 
         /// <inheritdoc cref="Binding.ValidatesOnExceptions"/>
         [DefaultValue( false )]
-        public bool ValidatesOnExceptions
-        {
-            get { return InternalBinding.ValidatesOnExceptions; }
-            set { InternalBinding.ValidatesOnExceptions = value; }
-        }
+        public bool ValidatesOnExceptions { get; set; }
 
         /// <inheritdoc cref="Binding.ValidatesOnNotifyDataErrors"/>
         [DefaultValue( false )]
-        public bool ValidatesOnNotifyDataErrors
-        {
-            get { return InternalBinding.ValidatesOnNotifyDataErrors; }
-            set { InternalBinding.ValidatesOnNotifyDataErrors = value; }
-        }
+        public bool ValidatesOnNotifyDataErrors { get; set; }
 
         /// <inheritdoc cref="Binding.ValidationRules"/>
-        public Collection<ValidationRule> ValidationRules
-        {
-            get { return InternalBinding.ValidationRules; }
-        }
+        public Collection<ValidationRule> ValidationRules { get; } = new();
 
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
@@ -172,7 +113,6 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// </summary>
         public MultiBind()
         {
-            InternalBinding.Mode = BindingMode.Default;
         }
 
         /// <summary>
@@ -255,9 +195,11 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected override object? CalculateValue( object?[] componentValues, Type targetType, CultureInfo targetCulture )
+        protected override (object? value, CultureInfo culture) CalculateValue( object?[] componentValues, CultureInfo[] componentCultures,
+                                                                                Type targetType, CultureInfo targetCulture )
         {
             object? value = null;
+            var culture = targetCulture;
 
             if( Converter != null )
             {
@@ -274,9 +216,43 @@ namespace Utilities.WPF.Net.MarkupExtensions
                 {
                     value = String.Format( targetCulture, StringFormat, componentValues );
                 }
+                else
+                {
+                    value = Binding.DoNothing;
+                    culture = CultureInfo.InvariantCulture;
+                }
             }
 
-            return value;
+            return (value, culture);
+        }
+
+        /// <inheritdoc/>
+        protected override MultiBinding CreateBinding()
+        {
+            var binding = new MultiBinding
+            {
+                BindingGroupName = BindingGroupName,
+                ConverterCulture = ConverterCulture,
+                Delay = Delay,
+                FallbackValue = FallbackValue,
+                Mode = Mode,
+                NotifyOnSourceUpdated = NotifyOnSourceUpdated,
+                NotifyOnTargetUpdated = NotifyOnTargetUpdated,
+                NotifyOnValidationError = NotifyOnValidationError,
+                TargetNullValue = TargetNullValue,
+                UpdateSourceExceptionFilter = UpdateSourceExceptionFilter,
+                UpdateSourceTrigger = UpdateSourceTrigger,
+                ValidatesOnDataErrors = ValidatesOnDataErrors,
+                ValidatesOnExceptions = ValidatesOnExceptions,
+                ValidatesOnNotifyDataErrors = ValidatesOnNotifyDataErrors,
+            };
+
+            foreach( var validationRule in ValidationRules )
+            {
+               binding.ValidationRules.Add( validationRule );
+            }
+
+            return binding;
         }
     }
 }

@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+using System.Windows.Data;
 
 namespace Utilities.WPF.Net.MarkupExtensions
 {
@@ -73,10 +74,11 @@ namespace Utilities.WPF.Net.MarkupExtensions
         }
 
         /// <inheritdoc/>
-        protected sealed override object? CalculateValue( object?[] componentValues, Type targetType, CultureInfo targetCulture )
+        protected sealed override (object? value, CultureInfo culture) CalculateValue( object?[] componentValues, CultureInfo[] componentCultures,
+                                                                                       Type targetType, CultureInfo targetCulture )
         {
             // Target type is ignored because operations have their own implicit return type.
-            return CalculateValue( componentValues, targetCulture );
+            return CalculateValue( componentValues, componentCultures, targetCulture );
         }
 
         /// <summary>
@@ -86,23 +88,15 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// Must be implemented by derived classes to perform the actual calculation.
         /// </remarks>
         /// <param name="parameterValues">Array with the values of the parameters.</param>
-        /// <param name="targetCulture">Culture to use to convert values to the target.</param>
-        /// <returns>Value of the operation.</returns>
-        protected abstract object? CalculateValue( object?[] parameterValues, CultureInfo targetCulture );
+        /// <param name="parameterCultures">Array with the cultures of the parameters.</param>
+        /// <param name="targetCulture">Culture of the target.</param>
+        /// <returns>Value of the markup expression and its associated culture.</returns>
+        protected abstract (object? value, CultureInfo culture) CalculateValue( object?[] parameterValues, CultureInfo[] parameterCultures, CultureInfo targetCulture );
 
         /// <inheritdoc/>
-        protected sealed override object? ConvertComponentValue( int index, object? value, CultureInfo culture )
+        protected sealed override MultiBinding CreateBinding()
         {
-            return ConvertParameterValue( index, value, culture );
+            return base.CreateBinding();
         }
-
-        /// <summary>
-        /// Converts the value of a parameter to the type expected by the calculation (if necessary).
-        /// </summary>
-        /// <param name="parameterId">Identifier of the parameter.</param>
-        /// <param name="parameterValue">Input value of the parameter.</param>
-        /// <param name="culture">Culture to use to convert the value.</param>
-        /// <returns>Converted value.</returns>
-        protected abstract object? ConvertParameterValue( int parameterId, object? parameterValue, CultureInfo culture );
     }
 }
