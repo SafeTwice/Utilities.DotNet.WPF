@@ -35,8 +35,8 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// </summary>
         public object? Culture
         {
-            get => GetParameterValue( CULTURE_INDEX );
-            set => SetParameterValue( CULTURE_INDEX, value );
+            get => GetParameterValue( CultureIndex );
+            set => SetParameterValue( CultureIndex, value );
         }
 
         //===========================================================================
@@ -70,14 +70,18 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <summary>
         /// Constructor.
         /// </summary>
-        protected ConverterBase() : base( NUM_OPERANDS )
+        /// <param name="additionalParametersNum">Number of additional parameters.</param>
+        protected ConverterBase( int additionalParametersNum = 0 ) : base( BASE_NUM_PARAMETERS + additionalParametersNum )
         {
+            CultureIndex = BASE_NUM_PARAMETERS + additionalParametersNum - 1;
         }
 
         /// <summary>
         /// Constructor that initializes the value to convert.
         /// </summary>
-        protected ConverterBase( object? value ) : base( NUM_OPERANDS )
+        /// <param name="value">Value to convert.</param>
+        /// <param name="additionalParametersNum">Number of additional parameters.</param>
+        protected ConverterBase( object? value, int additionalParametersNum = 0 ) : this( additionalParametersNum )
         {
             Value = value;
         }
@@ -87,10 +91,24 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected sealed override (object? value, CultureInfo culture) CalculateValue( object?[] parameterValues, CultureInfo[] componentCultures, CultureInfo targetCulture )
+        protected sealed override (object? value, CultureInfo culture) CalculateValue( object?[] parameterValues, CultureInfo[] parameterCultures, CultureInfo targetCulture )
         {
-            var value = parameterValues[ VALUE_INDEX ];
-            var usedCulture = GetUsedCulture( parameterValues[ CULTURE_INDEX ], componentCultures[ VALUE_INDEX ] );
+            Debug.Assert( parameterValues.Length >= BASE_NUM_PARAMETERS );
+            Debug.Assert( parameterCultures.Length >= BASE_NUM_PARAMETERS );
+
+            object? value;
+            if( parameterValues.Length == BASE_NUM_PARAMETERS )
+            {
+                value = parameterValues[ VALUE_INDEX ];
+            }
+            else
+            {
+                var values = new object?[ parameterValues.Length - 1 ];
+                Array.Copy( parameterValues, 0, values, 0, values.Length );
+                value = values;
+            }
+
+            var usedCulture = GetUsedCulture( parameterValues[ CultureIndex ], parameterCultures[ VALUE_INDEX ] );
             return ConvertValue( value, usedCulture );
         }
 
@@ -98,7 +116,10 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// Converts a value.
         /// </summary>
         /// <remarks>
-        /// Must be implemented by derived classes to perform the actual conversion.
+        /// <para>Must be implemented by derived classes to perform the actual conversion.</para>
+        /// <para>If the derived class does not specify additional parameters, then <paramref name="value"/> is the value to convert.</para>
+        /// <para>If the derived class specifies additional parameters, then <paramref name="value"/> is an array with the value to convert
+        ///       in the first position followed with the values of the additional parameters.</para>
         /// </remarks>
         /// <param name="value">Value to convert.</param>
         /// <param name="culture">Culture to use to convert the value.</param>
@@ -108,11 +129,16 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <inheritdoc/>
         protected sealed override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, CultureInfo[] sourceCultures )
         {
-            Debug.Assert( sourceTypes.Length == NUM_OPERANDS );
-            var result = new object?[ NUM_OPERANDS ];
+            Debug.Assert( sourceTypes.Length >= BASE_NUM_PARAMETERS );
+            Debug.Assert( sourceCultures.Length >= BASE_NUM_PARAMETERS );
+
+            var result = new object?[ sourceTypes.Length ];
+            for( var i = 0; i < result.Length; i++ )
+            {
+                result[ i ] = Binding.DoNothing;
+            }
 
             result[ VALUE_INDEX ] = ConvertBackValue( targetValue, targetCulture, sourceTypes[ VALUE_INDEX ], sourceCultures[ VALUE_INDEX ] );
-            result[ CULTURE_INDEX ] = Binding.DoNothing;
 
             return result;
         }
@@ -135,8 +161,13 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //                           PRIVATE CONSTANTS
         //===========================================================================
 
-        private const int NUM_OPERANDS = 2;
         private const int VALUE_INDEX = 0;
-        private const int CULTURE_INDEX = 1;
+        private const int BASE_NUM_PARAMETERS = 2;
+
+        //===========================================================================
+        //                           PRIVATE ATTRIBUTES
+        //===========================================================================
+
+        private readonly int CultureIndex;
     }
 }

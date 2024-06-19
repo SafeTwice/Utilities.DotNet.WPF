@@ -3,6 +3,7 @@
 /// @license    See LICENSE.txt
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Markup;
@@ -16,13 +17,26 @@ namespace Utilities.WPF.Net.MarkupExtensions
     public sealed class ToString : ConverterBase
     {
         //===========================================================================
+        //                           PUBLIC PROPERTIES
+        //===========================================================================
+
+        /// <summary>
+        /// Optional format string used to convert the value.
+        /// </summary>
+        public object? FormatString
+        {
+            get => GetParameterValue( FORMATSTRING_INDEX );
+            set => SetParameterValue( FORMATSTRING_INDEX, value );
+        }
+
+        //===========================================================================
         //                          PUBLIC CONSTRUCTORS
         //===========================================================================
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public ToString()
+        public ToString() : base( ADDITIONAL_PARAMETERS_NUM  )
         {
         }
 
@@ -30,7 +44,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// Constructor that initializes the value to convert.
         /// </summary>
         /// <param name="value">Value to convert.</param>
-        public ToString( object? value ) : base( value )
+        public ToString( object? value ) : base( value, ADDITIONAL_PARAMETERS_NUM )
         {
         }
 
@@ -41,7 +55,22 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <inheritdoc/>
         protected override (object? value, CultureInfo culture) ConvertValue( object? value, CultureInfo culture )
         {
-            return (Convert.ToString( value, culture ), culture);
+            var values = (object?[]?) value;
+
+            Debug.Assert( values != null );
+            Debug.Assert( values!.Length == ( ADDITIONAL_PARAMETERS_NUM + 1 ) );
+
+            var valueToConvert = values[ VALUE_INDEX ];
+            var formatString = values[ FORMATSTRING_INDEX ] as string;
+
+            if( formatString != null )
+            {
+                return (String.Format( culture, $"{{0:{formatString}}}", valueToConvert ), culture);
+            }
+            else
+            {
+                return (Convert.ToString( valueToConvert, culture ), culture);
+            }
         }
 
         protected override object? ConvertBackValue( object? targetValue, CultureInfo targetCulture, Type sourceType, CultureInfo sourceCulture )
@@ -65,5 +94,13 @@ namespace Utilities.WPF.Net.MarkupExtensions
                 return DependencyProperty.UnsetValue;
             }
         }
+
+        //===========================================================================
+        //                           PRIVATE CONSTANTS
+        //===========================================================================
+
+        private const int VALUE_INDEX = 0;
+        private const int FORMATSTRING_INDEX = 1;
+        private const int ADDITIONAL_PARAMETERS_NUM = 1;
     }
 }
