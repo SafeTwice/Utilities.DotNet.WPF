@@ -56,10 +56,12 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <summary>
-        /// Calculates the value of the binding from the effective (calculated) values of its components.
+        /// Calculates the effective value of the binding from the effective (calculated) values of its components.
         /// </summary>
         /// <remarks>
-        /// Must be implemented by derived classes to perform the actual calculation.
+        /// <para>Must be implemented by derived classes to perform the actual calculation.</para>
+        /// <para>The target type is necessary for the implementation of <see cref="MultiBind"/>, it can be ignored by
+        ///       other markup extensions because conversion to the target type will be performed by the caller.</para>
         /// </remarks>
         /// <param name="componentValues">Array with the effective values of the components.</param>
         /// <param name="componentCultures">Array with the cultures of the components.</param>
@@ -70,16 +72,16 @@ namespace Utilities.WPF.Net.MarkupExtensions
                                                                                 Type targetType, CultureInfo targetCulture );
 
         /// <summary>
-        /// Calculates the values of the components from the value of the binding target.
+        /// Calculates the source values for the components from the effective value of the binding target.
         /// </summary>
         /// <remarks>
         /// Must be implemented by derived classes to perform the actual calculation.
         /// </remarks>
-        /// <param name="targetValue">Value of the binding target.</param>
+        /// <param name="targetValue">Effective value of the binding target.</param>
         /// <param name="targetCulture">Culture of the binding target.</param>
         /// <param name="sourceTypes">Types of the component sources.</param>
         /// <param name="sourceCultures">Cultures of the component sources.</param>
-        /// <returns>An array with the values of the components, or <c>null</c> if the calculation cannot be performed or is not feasible.</returns>
+        /// <returns>An array with the source values for the components, or <c>null</c> if the calculation cannot be performed or is not feasible.</returns>
         protected abstract object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, CultureInfo[] sourceCultures );
 
         /// <summary>
@@ -111,7 +113,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         {
             var mode = BindingMode.Default;
 
-            foreach( var component in Components )
+            foreach( var component in ComponentRawValues )
             {
                 BindingMode componentMode;
 
@@ -160,7 +162,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         {
             var trigger = UpdateSourceTrigger.Default;
 
-            foreach( var component in Components )
+            foreach( var component in ComponentRawValues )
             {
                 UpdateSourceTrigger componentTrigger;
 
@@ -260,7 +262,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         private IEnumerable<Bind> GetBindings()
         {
-            foreach( var value in Components )
+            foreach( var value in ComponentRawValues )
             {
                 if( value is Bind binding )
                 {
@@ -360,7 +362,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// Calculates the effective value of the binding from the effective values of its components.
         /// </summary>
         /// <remarks>
-        /// <para>The effective value of static (constant) components is intrinsically the component value.</para>
+        /// <para>The effective value of static (constant) components is intrinsically the component raw value.</para>
         /// <para>The effective value of nested MultiBindBase-derived components is calculated recursively.</para>
         /// <para>The effective value of binding components is obtained from the binding source, which is passed in <paramref name="bindingValues"/>.</para>
         /// </remarks>
@@ -372,43 +374,58 @@ namespace Utilities.WPF.Net.MarkupExtensions
         private (object? value, CultureInfo culture) CalculateEffectiveValue( IEnumerator bindingValues, IEnumerator<BindingExpressionBase> bindingExpressions,
                                                                               Type targetType, CultureInfo targetCulture )
         {
-            var effectiveComponentValues = new object?[ Components.Count ];
-            var componentCultures = new CultureInfo[ Components.Count ];
+            var effectiveComponentValues = new object?[ ComponentRawValues.Count ];
+            var componentCultures = new CultureInfo[ ComponentRawValues.Count ];
 
-            for( int i = 0; i < Components.Count; i++ )
+            while( ComponentTypes.Count < ComponentRawValues.Count )
             {
-                var component = Components[ i ];
-                (object? value, CultureInfo culture) effectiveComponentValue;
+                ComponentTypes.Add( typeof( object ) );
+            }
+
+            for( int i = 0; i < ComponentRawValues.Count; i++ )
+            {
+                var component = ComponentRawValues[ i ];
+                var componentType = ComponentTypes[ i ];
+
+                object? effectiveComponentValue;
+                CultureInfo componentCulture;
 
                 if( component is MultiBindBase customBinding )
                 {
-                    effectiveComponentValue = customBinding.CalculateEffectiveValue( bindingValues, bindingExpressions, targetType, targetCulture );
+                    (effectiveComponentValue, componentCulture) = customBinding.CalculateEffectiveValue( bindingValues, bindingExpressions, componentType, targetCulture );
                 }
                 else if( component is Bind binding )
                 {
                     bindingValues.MoveNext();
-                    effectiveComponentValue.value = bindingValues.Current;
+                    effectiveComponentValue = bindingValues.Current;
 
                     bindingExpressions.MoveNext();
                     var bindingExpression = bindingExpressions.Current as BindingExpression;
-                    effectiveComponentValue.culture = binding.ConverterCulture ?? GetBindingSourceCulture( bindingExpression );
+                    componentCulture = binding.ConverterCulture ?? GetBindingSourceCulture( bindingExpression );
                 }
                 else
                 {
-                    effectiveComponentValue.value = component;
-                    effectiveComponentValue.culture = CultureInfo.InvariantCulture;
+                    effectiveComponentValue = component;
+                    componentCulture = CultureInfo.InvariantCulture;
                 }
 
-                if( ( effectiveComponentValue.value == DependencyProperty.UnsetValue ) ||
-                    ( effectiveComponentValue.value == Binding.DoNothing ) )
+                if( ( effectiveComponentValue == DependencyProperty.UnsetValue ) ||
+                    ( effectiveComponentValue == Binding.DoNothing ) )
                 {
-                    return effectiveComponentValue;
+                    return (effectiveComponentValue, CultureInfo.InvariantCulture);
                 }
 
-                effectiveComponentValues[ i ] = effectiveComponentValue.value;
-                componentCultures[ i ] = effectiveComponentValue.culture;
+                // Convert the component value to its expected type (if necessary).
+                // Note: Markup extensions can declare components with type Object in order to convert the value
+                // later in the calculation process when CalculateValue() is called.
+                effectiveComponentValue = Helper.ConvertValue( effectiveComponentValue, componentType, componentCulture );
+
+                effectiveComponentValues[ i ] = effectiveComponentValue;
+                componentCultures[ i ] = componentCulture;
             }
 
+            // Note: The calculated value is not converted to the target type because it may be converted by when calculating the
+            // value or later it can be converted by the caller.
             return CalculateValue( effectiveComponentValues, componentCultures, targetType, targetCulture );
         }
 
@@ -424,12 +441,12 @@ namespace Utilities.WPF.Net.MarkupExtensions
         private bool CalculateBackBindingValues( object? targetValue, CultureInfo targetCulture, IEnumerator<BindingExpressionBase> bindingExpressions,
                                                  IEnumerator<Type> bindingSourceTypes, ICollection<object?> bindingValues )
         {
-            var sourceCultures = new CultureInfo[ Components.Count ];
-            var sourceTypes = new Type[ Components.Count ];
+            var sourceCultures = new CultureInfo[ ComponentRawValues.Count ];
+            var sourceTypes = new Type[ ComponentRawValues.Count ];
 
-            for( int i = 0; i < Components.Count; i++ )
+            for( int i = 0; i < ComponentRawValues.Count; i++ )
             {
-                var component = Components[ i ];
+                var component = ComponentRawValues[ i ];
                 CultureInfo sourceCulture;
                 Type sourceType;
 
@@ -468,12 +485,12 @@ namespace Utilities.WPF.Net.MarkupExtensions
                     return false;
                 }
 
-                Debug.Assert( componentBackValues.Length == Components.Count );
+                Debug.Assert( componentBackValues.Length == ComponentRawValues.Count );
             }
 
-            for( int i = 0; i < Components.Count; i++ )
+            for( int i = 0; i < ComponentRawValues.Count; i++ )
             {
-                var component = Components[ i ];
+                var component = ComponentRawValues[ i ];
                 var componentBackValue = componentBackValues?[ i ] ?? targetValue;
 
                 if( component is MultiBindBase customBinding )
@@ -519,8 +536,12 @@ namespace Utilities.WPF.Net.MarkupExtensions
             var source = bindingExpression?.ResolvedSource;
             if( source is FrameworkElement frameworkElement )
             {
-                var sourceLanguage = frameworkElement.Language;
-                sourceCulture = sourceLanguage?.GetSpecificCulture();
+                var targetPropertyType = bindingExpression!.TargetProperty.PropertyType;
+                if( targetPropertyType == typeof( string ) )
+                {
+                    var sourceLanguage = frameworkElement.Language;
+                    sourceCulture = sourceLanguage?.GetSpecificCulture();
+                }
             }
 
             return sourceCulture ?? CultureInfo.InvariantCulture;
@@ -546,6 +567,8 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //                          PROTECTED PROPERTIES
         //===========================================================================
 
-        protected private Collection<object?> Components { get; } = new();
+        protected private Collection<object?> ComponentRawValues { get; } = new();
+
+        protected private Collection<Type> ComponentTypes { get; } = new();
     }
 }

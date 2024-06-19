@@ -29,7 +29,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// Collection of components that will be combined by the multi-binding.
         /// </summary>
         [DesignerSerializationVisibility( DesignerSerializationVisibility.Content )]
-        public new Collection<object?> Components => base.Components;
+        public Collection<object?> Components => base.ComponentRawValues;
 
         /// <inheritdoc cref="BindingBase.BindingGroupName "/>
         [DefaultValue( "" )]
@@ -177,7 +177,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <inheritdoc/>
         void IAddChild.AddChild( object value )
         {
-            base.Components.Add( value );
+            base.ComponentRawValues.Add( value );
         }
 
         /// <inheritdoc/>
@@ -186,7 +186,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
             var trimmedText = text.Trim();
             if( trimmedText.Length > 0 )
             {
-                base.Components.Add( trimmedText );
+                base.ComponentRawValues.Add( trimmedText );
             }
         }
 

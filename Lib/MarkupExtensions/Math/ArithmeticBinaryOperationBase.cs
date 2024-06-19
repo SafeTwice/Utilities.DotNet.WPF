@@ -12,7 +12,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
     /// Base class for arithmetic binary operations.
     /// </summary>
     [MarkupExtensionReturnType( typeof( double ) )]
-    public abstract class ArithmeticBinaryOperationBase : BinaryOperationBase
+    public abstract class ArithmeticBinaryOperationBase : BinaryOperationBase<double, double>
     {
         //===========================================================================
         //                          PROTECTED CONSTRUCTORS
@@ -21,7 +21,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <summary>
         /// Constructor.
         /// </summary>
-        protected ArithmeticBinaryOperationBase() : base()
+        protected ArithmeticBinaryOperationBase()
         {
         }
 
@@ -30,27 +30,12 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected override sealed (object? value, CultureInfo culture) CalculateValue( object? a, object? b )
+        protected override sealed (object? value, CultureInfo culture) CalculateOperationValue( double a, double b )
         {
-            object? operationValue;
-
-            if( ( a == null ) || ( b == null ) )
-            {
-                operationValue = null;
-            }
-            else
-            {
-                operationValue = CalculateValue( (double) a, (double) b );
-            }
+            var operationValue = CalculateValue( a, b );
 
             return (operationValue, CultureInfo.InvariantCulture);
         }
-
-        /// <inheritdoc/>
-        protected override object? ConvertOperandAValue( object? value, CultureInfo culture ) => ConvertOperandValue( value, culture );
-
-        /// <inheritdoc/>
-        protected override object? ConvertOperandBValue( object? value, CultureInfo culture ) => ConvertOperandValue( value, culture );
 
         /// <summary>
         /// Calculates the value of the operation.
@@ -58,37 +43,14 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <remarks>
         /// Must be implemented by derived classes to perform the actual calculation.
         /// </remarks>
-        /// <param name="a">Left operand value.</param>
-        /// <param name="b">Right operand value.</param>
+        /// <param name="a">First operand value.</param>
+        /// <param name="b">Second operand value.</param>
         /// <returns></returns>
         protected abstract double CalculateValue( double a, double b );
 
-        protected override (object? a, object? b)? CalculateBackValues( object? targetValue )
+        protected override (double a, double b)? CalculateOperationBackValues( object? targetValue )
         {
             return null;
-        }
-
-        //===========================================================================
-        //                            PRIVATE METHODS
-        //===========================================================================
-
-        private object? ConvertOperandValue( object? value, CultureInfo culture )
-        {
-            if( ( value == null ) || ( value.GetType() == typeof( double ) ) )
-            {
-                return value;
-            }
-            else
-            {
-                try
-                {
-                    return Convert.ToDouble( value, culture );
-                }
-                catch
-                {
-                    return null;
-                }
-            }
         }
     }
 }

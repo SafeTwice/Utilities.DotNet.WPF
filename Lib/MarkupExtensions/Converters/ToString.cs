@@ -25,8 +25,8 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// </summary>
         public object? FormatString
         {
-            get => GetParameterValue( FORMATSTRING_INDEX );
-            set => SetParameterValue( FORMATSTRING_INDEX, value );
+            get => GetParameterRawValue( FORMATSTRING_INDEX );
+            set => SetParameterRawValue( FORMATSTRING_INDEX, value );
         }
 
         //===========================================================================
@@ -36,7 +36,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public ToString() : base( ADDITIONAL_PARAMETERS_NUM  )
+        public ToString() : base( ADDITIONAL_PARAMETERS_TYPES )
         {
         }
 
@@ -44,7 +44,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// Constructor that initializes the value to convert.
         /// </summary>
         /// <param name="value">Value to convert.</param>
-        public ToString( object? value ) : base( value, ADDITIONAL_PARAMETERS_NUM )
+        public ToString( object? value ) : base( value, ADDITIONAL_PARAMETERS_TYPES )
         {
         }
 
@@ -58,7 +58,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
             var values = (object?[]?) value;
 
             Debug.Assert( values != null );
-            Debug.Assert( values!.Length == ( ADDITIONAL_PARAMETERS_NUM + 1 ) );
+            Debug.Assert( values!.Length == ( ADDITIONAL_PARAMETERS_TYPES.Length + 1 ) );
 
             var valueToConvert = values[ VALUE_INDEX ];
             var formatString = values[ FORMATSTRING_INDEX ] as string;
@@ -101,6 +101,10 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         private const int VALUE_INDEX = 0;
         private const int FORMATSTRING_INDEX = 1;
-        private const int ADDITIONAL_PARAMETERS_NUM = 1;
+
+        private static readonly Type[] ADDITIONAL_PARAMETERS_TYPES = new Type[]
+        {
+            typeof( string ), // Format string
+        };
     }
 }

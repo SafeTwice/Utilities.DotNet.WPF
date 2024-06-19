@@ -3,8 +3,10 @@
 /// @license    See LICENSE.txt
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
@@ -26,8 +28,8 @@ namespace Utilities.WPF.Net.MarkupExtensions
         [ConstructorArgument( "value" )]
         public object? Value
         {
-            get => GetParameterValue( VALUE_INDEX );
-            set => SetParameterValue( VALUE_INDEX, value );
+            get => base.GetParameterRawValue( VALUE_INDEX );
+            set => base.SetParameterRawValue( VALUE_INDEX, value );
         }
 
         /// <summary>
@@ -35,8 +37,8 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// </summary>
         public object? Culture
         {
-            get => GetParameterValue( CultureIndex );
-            set => SetParameterValue( CultureIndex, value );
+            get => base.GetParameterRawValue( CULTURE_INDEX );
+            set => base.SetParameterRawValue( CULTURE_INDEX, value );
         }
 
         //===========================================================================
@@ -71,9 +73,9 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// Constructor.
         /// </summary>
         /// <param name="additionalParametersNum">Number of additional parameters.</param>
-        protected ConverterBase( int additionalParametersNum = 0 ) : base( BASE_NUM_PARAMETERS + additionalParametersNum )
+        protected ConverterBase( IEnumerable<Type>? additionalParameterTypes = null )
+            : base( ( additionalParameterTypes == null ) ? PARAMETER_TYPES : PARAMETER_TYPES.Concat( additionalParameterTypes ) )
         {
-            CultureIndex = BASE_NUM_PARAMETERS + additionalParametersNum - 1;
         }
 
         /// <summary>
@@ -81,7 +83,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// </summary>
         /// <param name="value">Value to convert.</param>
         /// <param name="additionalParametersNum">Number of additional parameters.</param>
-        protected ConverterBase( object? value, int additionalParametersNum = 0 ) : this( additionalParametersNum )
+        protected ConverterBase( object? value, IEnumerable<Type>? additionalParameterTypes = null ) : this( additionalParameterTypes )
         {
             Value = value;
         }
@@ -93,22 +95,22 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <inheritdoc/>
         protected sealed override (object? value, CultureInfo culture) CalculateValue( object?[] parameterValues, CultureInfo[] parameterCultures, CultureInfo targetCulture )
         {
-            Debug.Assert( parameterValues.Length >= BASE_NUM_PARAMETERS );
-            Debug.Assert( parameterCultures.Length >= BASE_NUM_PARAMETERS );
+            Debug.Assert( parameterValues.Length >= PARAMETER_TYPES.Length );
+            Debug.Assert( parameterCultures.Length >= PARAMETER_TYPES.Length );
 
             object? value;
-            if( parameterValues.Length == BASE_NUM_PARAMETERS )
+            if( parameterValues.Length == PARAMETER_TYPES.Length )
             {
                 value = parameterValues[ VALUE_INDEX ];
             }
             else
             {
                 var values = new object?[ parameterValues.Length - 1 ];
-                Array.Copy( parameterValues, 0, values, 0, values.Length );
+                Array.Copy( parameterValues, VALUE_INDEX, values, 0, values.Length );
                 value = values;
             }
 
-            var usedCulture = GetUsedCulture( parameterValues[ CultureIndex ], parameterCultures[ VALUE_INDEX ] );
+            var usedCulture = GetUsedCulture( parameterValues[ CULTURE_INDEX ], parameterCultures[ VALUE_INDEX ] );
             return ConvertValue( value, usedCulture );
         }
 
@@ -129,8 +131,8 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <inheritdoc/>
         protected sealed override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, CultureInfo[] sourceCultures )
         {
-            Debug.Assert( sourceTypes.Length >= BASE_NUM_PARAMETERS );
-            Debug.Assert( sourceCultures.Length >= BASE_NUM_PARAMETERS );
+            Debug.Assert( sourceTypes.Length >= PARAMETER_TYPES.Length );
+            Debug.Assert( sourceCultures.Length >= PARAMETER_TYPES.Length );
 
             var result = new object?[ sourceTypes.Length ];
             for( var i = 0; i < result.Length; i++ )
@@ -157,17 +159,55 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <returns>Converted back value.</returns>
         protected abstract object? ConvertBackValue( object? targetValue, CultureInfo targetCulture, Type sourceType, CultureInfo sourceCulture );
 
+        /// <summary>
+        /// Gets the raw value of the specified additional parameter.
+        /// </summary>
+        /// <remarks>
+        /// <para>The parameter identifier must be in the range from 1 to the number of parameters (as specified in the constructor).</para>
+        /// </remarks>
+        /// <param name="additionalParameterId">Identifier of the parameter.</param>
+        /// <returns>Raw value of the parameter.</returns>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the parameter identifier is out of range.</exception>
+        protected new object? GetParameterRawValue( int additionalParameterId )
+        {
+            if( ( additionalParameterId < 1 ) || ( additionalParameterId >= ( ComponentRawValues.Count - 1 ) ) )
+            {
+                throw new ArgumentOutOfRangeException( nameof( additionalParameterId ) );
+            }
+
+            return base.GetParameterRawValue( additionalParameterId + 1 );
+        }
+
+        /// <summary>
+        /// Sets the raw value of the specified additional parameter.
+        /// </summary>
+        /// <remarks>
+        /// The parameter identifier must be in the range from 1 to the number of parameters (as specified in the constructor).
+        /// </remarks>
+        /// <param name="additionalParameterId">Identifier of the parameter.</param>
+        /// <param name="parameterValue">Raw value of the parameter.</param>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if the parameter identifier is out of range.</exception>
+        protected new void SetParameterRawValue( int additionalParameterId, object? parameterValue )
+        {
+            if( ( additionalParameterId < 1 ) || ( additionalParameterId >= ( ComponentRawValues.Count - 1 ) ) )
+            {
+                throw new ArgumentOutOfRangeException( nameof( additionalParameterId ) );
+            }
+
+            base.SetParameterRawValue( additionalParameterId + 1, parameterValue );
+        }
+
         //===========================================================================
         //                           PRIVATE CONSTANTS
         //===========================================================================
 
-        private const int VALUE_INDEX = 0;
-        private const int BASE_NUM_PARAMETERS = 2;
+        private const int CULTURE_INDEX = 0;
+        private const int VALUE_INDEX = 1;
 
-        //===========================================================================
-        //                           PRIVATE ATTRIBUTES
-        //===========================================================================
-
-        private readonly int CultureIndex;
+        private static readonly Type[] PARAMETER_TYPES =
+        {
+            typeof( object ), // Culture
+            typeof( object ), // Value
+        };
     }
 }

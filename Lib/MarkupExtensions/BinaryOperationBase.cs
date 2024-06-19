@@ -12,7 +12,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
     /// <summary>
     /// Base class for binary operations.
     /// </summary>
-    public abstract class BinaryOperationBase : BindingMarkupExtensionBase
+    public abstract class BinaryOperationBase<TA, TB> : BindingMarkupExtensionBase
     {
         //===========================================================================
         //                           PUBLIC PROPERTIES
@@ -23,8 +23,8 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// </summary>
         public object? A
         {
-            get => GetParameterValue( A_INDEX );
-            set => SetParameterValue( A_INDEX, value );
+            get => GetParameterRawValue( A_INDEX );
+            set => SetParameterRawValue( A_INDEX, value );
         }
 
         /// <summary>
@@ -32,8 +32,8 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// </summary>
         public object? B
         {
-            get => GetParameterValue( B_INDEX );
-            set => SetParameterValue( B_INDEX, value );
+            get => GetParameterRawValue( B_INDEX );
+            set => SetParameterRawValue( B_INDEX, value );
         }
 
         //===========================================================================
@@ -43,7 +43,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <summary>
         /// Constructor.
         /// </summary>
-        protected BinaryOperationBase() : base( NUM_OPERANDS )
+        protected BinaryOperationBase() : base( new Type[] { typeof( TA ), typeof( TB ) } )
         {
         }
 
@@ -54,10 +54,15 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <inheritdoc/>
         protected sealed override (object? value, CultureInfo culture) CalculateValue( object?[] parameterValues, CultureInfo[] parameterCultures, CultureInfo targetCulture )
         {
-            var a = ConvertOperandAValue( parameterValues[ A_INDEX ], parameterCultures[ A_INDEX ] );
-            var b = ConvertOperandBValue( parameterValues[ B_INDEX ], parameterCultures[ B_INDEX ] );
+            var a = (TA?) parameterValues[ A_INDEX ];
+            var b = (TB?) parameterValues[ B_INDEX ];
 
-            return CalculateValue( a, b );
+            if( ( a == null ) || ( b == null ) )
+            {
+                return (DependencyProperty.UnsetValue, CultureInfo.InvariantCulture);
+            }
+
+            return CalculateOperationValue( a, b );
         }
 
         /// <summary>
@@ -69,30 +74,14 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <param name="a">First operand value.</param>
         /// <param name="b">Second operand value.</param>
         /// <returns></returns>
-        protected abstract (object? value, CultureInfo culture) CalculateValue( object? a, object? b );
-
-        /// <summary>
-        /// Converts the value of the first operand to the type expected by the calculation (if necessary).
-        /// </summary>
-        /// <param name="value">Effective input value of the operand.</param>
-        /// <param name="culture">Culture to use to convert the value.</param>
-        /// <returns>Converted value.</returns>
-        protected abstract object? ConvertOperandAValue( object? value, CultureInfo culture );
-
-        /// <summary>
-        /// Converts the value of the second operand to the type expected by the calculation (if necessary).
-        /// </summary>
-        /// <param name="value">Effective input value of the operand.</param>
-        /// <param name="culture">Culture to use to convert the value.</param>
-        /// <returns>Converted value.</returns>
-        protected abstract object? ConvertOperandBValue( object? value, CultureInfo culture );
+        protected abstract (object? value, CultureInfo culture) CalculateOperationValue( TA a, TB b );
 
         protected override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, CultureInfo[] sourceCultures )
         {
             Debug.Assert( sourceTypes.Length == NUM_OPERANDS );
             Debug.Assert( sourceCultures.Length == NUM_OPERANDS );
 
-            var backValues = CalculateBackValues( targetValue );
+            var backValues = CalculateOperationBackValues( targetValue );
 
             if( backValues == null )
             {
@@ -127,7 +116,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// </summary>
         /// <param name="targetValue">Value of the operation.</param>
         /// <returns>The values of the operands, or <c>null</c> if the calculation cannot be performed or is not feasible.</returns>
-        protected abstract (object? a, object? b)? CalculateBackValues( object? targetValue );
+        protected abstract (TA a, TB b)? CalculateOperationBackValues( object? targetValue );
 
         //===========================================================================
         //                           PRIVATE CONSTANTS
