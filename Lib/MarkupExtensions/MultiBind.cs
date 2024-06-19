@@ -2,14 +2,14 @@
 /// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
+using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
-using System.Windows.Data;
 using System.Windows;
-using System.Windows.Markup;
-using System.Collections.ObjectModel;
 using System.Windows.Controls;
-using System;
+using System.Windows.Data;
+using System.Windows.Markup;
 
 namespace Utilities.WPF.Net.MarkupExtensions
 {
@@ -227,6 +227,19 @@ namespace Utilities.WPF.Net.MarkupExtensions
         }
 
         /// <inheritdoc/>
+        protected override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, CultureInfo[] sourceCultures )
+        {
+            if( Converter != null )
+            {
+                return Converter.ConvertBack( targetValue, sourceTypes, ConverterParameter, targetCulture );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <inheritdoc/>
         protected override MultiBinding CreateBinding()
         {
             var binding = new MultiBinding
@@ -249,7 +262,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
             foreach( var validationRule in ValidationRules )
             {
-               binding.ValidationRules.Add( validationRule );
+                binding.ValidationRules.Add( validationRule );
             }
 
             return binding;

@@ -3,7 +3,10 @@
 /// @license    See LICENSE.txt
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
+using System.Windows;
+using System.Windows.Data;
 using System.Windows.Markup;
 
 namespace Utilities.WPF.Net.MarkupExtensions
@@ -101,6 +104,32 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <param name="culture">Culture to use to convert the value.</param>
         /// <returns>Converted value and its associated culture.</returns>
         protected abstract (object? value, CultureInfo culture) ConvertValue( object? value, CultureInfo culture );
+
+        /// <inheritdoc/>
+        protected sealed override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, CultureInfo[] sourceCultures )
+        {
+            Debug.Assert( sourceTypes.Length == NUM_OPERANDS );
+            var result = new object?[ NUM_OPERANDS ];
+
+            result[ VALUE_INDEX ] = ConvertBackValue( targetValue, targetCulture, sourceTypes[ VALUE_INDEX ], sourceCultures[ VALUE_INDEX ] );
+            result[ CULTURE_INDEX ] = Binding.DoNothing;
+
+            return result;
+        }
+
+        /// <summary>
+        /// Converts back a value.
+        /// </summary>
+        /// <remarks>
+        /// <para>If the source value should not be modified, then <see cref="Binding.DoNothing"/> must be returned.</para>
+        /// <para>If the value cannot be converted back, then <see cref="DependencyProperty.UnsetValue"/> must be returned.</para>
+        /// </remarks>
+        /// <param name="targetValue">Value to convert back.</param>
+        /// <param name="targetCulture">Culture of the value to convert back.</param>
+        /// <param name="sourceType">Type of the source to convert the value back to.</param>
+        /// <param name="sourceCulture">Culture of the source.</param>
+        /// <returns>Converted back value.</returns>
+        protected abstract object? ConvertBackValue( object? targetValue, CultureInfo targetCulture, Type sourceType, CultureInfo sourceCulture );
 
         //===========================================================================
         //                           PRIVATE CONSTANTS

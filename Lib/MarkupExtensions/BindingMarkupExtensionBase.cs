@@ -94,6 +94,12 @@ namespace Utilities.WPF.Net.MarkupExtensions
         protected abstract (object? value, CultureInfo culture) CalculateValue( object?[] parameterValues, CultureInfo[] parameterCultures, CultureInfo targetCulture );
 
         /// <inheritdoc/>
+        protected override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, CultureInfo[] sourceCultures )
+        {
+            return null;
+        }
+
+        /// <inheritdoc/>
         protected sealed override MultiBinding CreateBinding()
         {
             return base.CreateBinding();

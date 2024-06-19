@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+using System.Windows;
 using System.Windows.Markup;
 
 namespace Utilities.WPF.Net.MarkupExtensions
@@ -41,6 +42,28 @@ namespace Utilities.WPF.Net.MarkupExtensions
         protected override (object? value, CultureInfo culture) ConvertValue( object? value, CultureInfo culture )
         {
             return (Convert.ToString( value, culture ), culture);
+        }
+
+        protected override object? ConvertBackValue( object? targetValue, CultureInfo targetCulture, Type sourceType, CultureInfo sourceCulture )
+        {
+            if( targetValue == null )
+            {
+                return DependencyProperty.UnsetValue;
+            }
+
+            if( targetValue.GetType() != typeof( string ) )
+            {
+                targetValue = targetValue.ToString();
+            }
+
+            try
+            {
+                return Helper.ConvertValue( targetValue, sourceType, sourceCulture );
+            }
+            catch
+            {
+                return DependencyProperty.UnsetValue;
+            }
         }
     }
 }

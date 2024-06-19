@@ -70,14 +70,36 @@ namespace Utilities.WPF.Net.MarkupExtensions
                                                                                 Type targetType, CultureInfo targetCulture );
 
         /// <summary>
-        /// Creates a binding.
+        /// Calculates the values of the components from the value of the binding target.
         /// </summary>
-        /// <returns>Multi-binding.</returns>
+        /// <remarks>
+        /// Must be implemented by derived classes to perform the actual calculation.
+        /// </remarks>
+        /// <param name="targetValue">Value of the binding target.</param>
+        /// <param name="targetCulture">Culture of the binding target.</param>
+        /// <param name="sourceTypes">Types of the component sources.</param>
+        /// <param name="sourceCultures">Cultures of the component sources.</param>
+        /// <returns>An array with the values of the components, or <c>null</c> if the calculation cannot be performed or is not feasible.</returns>
+        protected abstract object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, CultureInfo[] sourceCultures );
+
+        /// <summary>
+        /// Creates the internal binding.
+        /// </summary>
+        /// <returns>Internal binding.</returns>
         protected virtual MultiBinding CreateBinding()
         {
+            var mode = GetBindingMode();
+            if( mode == BindingMode.Default )
+            {
+                mode = BindingMode.OneWay;
+            }
+
+            var trigger = GetUpdateSourceTrigger();
+
             return new MultiBinding
             {
-                Mode = BindingMode.OneWay,
+                Mode = mode,
+                UpdateSourceTrigger = trigger,
             };
         }
 
@@ -87,19 +109,37 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         private class Converter : IMultiValueConverter
         {
-            public object? Convert( object[] bindingValues, Type targetType, object? parameter, CultureInfo culture )
+            public object? Convert( object?[] bindingValues, Type targetType, object? parameter, CultureInfo culture )
             {
                 var bindingExpressions = BindingExpression!.BindingExpressions;
                 Debug.Assert( bindingValues.Length == bindingExpressions.Count );
 
                 var calculatedValue = Binding!.CalculateEffectiveValue( bindingValues.GetEnumerator(), bindingExpressions.GetEnumerator(),
                                                                         targetType, culture );
-                return ConvertTargetValue( calculatedValue.value, targetType, culture );
+
+                return ConvertValue( calculatedValue.value, targetType, culture );
             }
 
-            public object[]? ConvertBack( object value, Type[] targetTypes, object? parameter, CultureInfo culture )
+            public object?[]? ConvertBack( object? value, Type[] targetTypes, object? parameter, CultureInfo culture )
             {
-                return null;
+                var bindingExpressions = BindingExpression!.BindingExpressions;
+
+                var targetTypesEnumerator = ( (IEnumerable<Type>) targetTypes ).GetEnumerator();
+
+                var bindingValues = new List<object?>();
+
+                if( Binding!.CalculateBackBindingValues( value, culture, bindingExpressions.GetEnumerator(), targetTypesEnumerator, bindingValues ) )
+                {
+                    var result = bindingValues.ToArray();
+
+                    Debug.Assert( result.Length == targetTypes.Length );
+
+                    return result;
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             public MultiBindBase? Binding { get; set; }
@@ -214,23 +254,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
             var emptyBindingExpressions = new List<BindingExpression>();
             var calculatedValue = CalculateEffectiveValue( Array.Empty<object>().GetEnumerator(), emptyBindingExpressions.GetEnumerator(), targetType, targetCulture );
 
-            return ConvertTargetValue( calculatedValue.value, targetType, targetCulture );
-        }
-
-        private static object? ConvertTargetValue( object? value, Type targetType, CultureInfo culture )
-        {
-            if( ( value != null ) && ( targetType != typeof( object ) ) && !targetType.IsAssignableFrom( value.GetType() ) )
-            {
-                try
-                {
-                    return Convert.ChangeType( value, targetType, culture );
-                }
-                catch
-                {
-                }
-            }
-
-            return value;
+            return ConvertValue( calculatedValue.value, targetType, targetCulture );
         }
 
         private static CultureInfo GetTargetCulture( object? targetObject )
@@ -249,6 +273,19 @@ namespace Utilities.WPF.Net.MarkupExtensions
             return culture ?? CultureInfo.InvariantCulture;
         }
 
+        /// <summary>
+        /// Calculates the effective value of the binding from the effective values of its components.
+        /// </summary>
+        /// <remarks>
+        /// <para>The effective value of static (constant) components is intrinsically the component value.</para>
+        /// <para>The effective value of nested MultiBindBase-derived components is calculated recursively.</para>
+        /// <para>The effective value of binding components is obtained from the binding source, which is passed in <paramref name="bindingValues"/>.</para>
+        /// </remarks>
+        /// <param name="bindingValues">Enumerator for binding values.</param>
+        /// <param name="bindingExpressions">Enumerator for binding expressions.</param>
+        /// <param name="targetType">Type of the target.</param>
+        /// <param name="targetCulture">Culture of the target.</param>
+        /// <returns>Effective value of the binding and its associated culture.</returns>
         private (object? value, CultureInfo culture) CalculateEffectiveValue( IEnumerator bindingValues, IEnumerator<BindingExpressionBase> bindingExpressions,
                                                                               Type targetType, CultureInfo targetCulture )
         {
@@ -257,14 +294,14 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
             for( int i = 0; i < Components.Count; i++ )
             {
-                var componentValue = Components[ i ];
+                var component = Components[ i ];
                 (object? value, CultureInfo culture) effectiveComponentValue;
 
-                if( componentValue is MultiBindBase customBinding )
+                if( component is MultiBindBase customBinding )
                 {
                     effectiveComponentValue = customBinding.CalculateEffectiveValue( bindingValues, bindingExpressions, targetType, targetCulture );
                 }
-                else if( componentValue is Bind binding )
+                else if( component is Bind binding )
                 {
                     bindingValues.MoveNext();
                     effectiveComponentValue.value = bindingValues.Current;
@@ -275,7 +312,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
                 }
                 else
                 {
-                    effectiveComponentValue.value = componentValue;
+                    effectiveComponentValue.value = component;
                     effectiveComponentValue.culture = CultureInfo.InvariantCulture;
                 }
 
@@ -292,6 +329,106 @@ namespace Utilities.WPF.Net.MarkupExtensions
             return CalculateValue( effectiveComponentValues, componentCultures, targetType, targetCulture );
         }
 
+        /// <summary>
+        /// Calculates the values of the binding component from the value of the binding target.
+        /// </summary>
+        /// <param name="targetValue">Value of the binding target.</param>
+        /// <param name="targetCulture">Culture of the binding target.</param>
+        /// <param name="bindingExpressions">Enumerator for binding expressions.</param>
+        /// <param name="bindingSourceTypes">Enumerator for the binding source types.</param>
+        /// <param name="bindingValues">[Output] Collection to which binding values are added.</param>
+        /// <returns><c>true</c> if the calculation was successful; otherwise, <c>false</c>.</returns>
+        private bool CalculateBackBindingValues( object? targetValue, CultureInfo targetCulture, IEnumerator<BindingExpressionBase> bindingExpressions,
+                                                 IEnumerator<Type> bindingSourceTypes, ICollection<object?> bindingValues )
+        {
+            var sourceCultures = new CultureInfo[ Components.Count ];
+            var sourceTypes = new Type[ Components.Count ];
+
+            for( int i = 0; i < Components.Count; i++ )
+            {
+                var component = Components[ i ];
+                CultureInfo sourceCulture;
+                Type sourceType;
+
+                if( component is Bind binding )
+                {
+                    bindingExpressions.MoveNext();
+                    var bindingExpression = bindingExpressions.Current as BindingExpression;
+                    sourceCulture = binding.ConverterCulture ?? GetBindingSourceCulture( bindingExpression );
+
+                    bindingSourceTypes.MoveNext();
+                    sourceType = bindingSourceTypes.Current;
+                }
+                else
+                {
+                    sourceCulture = CultureInfo.InvariantCulture;
+                    sourceType = typeof( object );
+                }
+
+                sourceCultures[ i ] = sourceCulture;
+                sourceTypes[ i ] = sourceType;
+            }
+
+            object?[]? componentBackValues;
+
+            if( ( targetValue == DependencyProperty.UnsetValue ) ||
+                ( targetValue == Binding.DoNothing ) )
+            {
+                componentBackValues = null;
+            }
+            else
+            {
+                componentBackValues = CalculateBackValues( targetValue, targetCulture, sourceTypes, sourceCultures );
+
+                if( componentBackValues == null )
+                {
+                    return false;
+                }
+
+                Debug.Assert( componentBackValues.Length == Components.Count );
+            }
+
+            for( int i = 0; i < Components.Count; i++ )
+            {
+                var component = Components[ i ];
+                var componentBackValue = componentBackValues?[ i ] ?? targetValue;
+
+                if( component is MultiBindBase customBinding )
+                {
+                    if( !customBinding.CalculateBackBindingValues( componentBackValue, targetCulture, bindingExpressions, bindingSourceTypes, bindingValues ) )
+                    {
+                        return false;
+                    }
+                }
+                else if( component is Bind binding )
+                {
+                    object? finalBackValue;
+
+                    if( ( componentBackValue == DependencyProperty.UnsetValue ) ||
+                        ( componentBackValue == Binding.DoNothing ) )
+                    {
+                        finalBackValue = componentBackValue;
+                    }
+                    else
+                    {
+                        finalBackValue = ConvertValue( componentBackValue, sourceTypes[ i ]!, sourceCultures[ i ] );
+                    }
+                    bindingValues.Add( finalBackValue );
+                }
+                else
+                {
+                    if( ( componentBackValue != DependencyProperty.UnsetValue ) &&
+                        ( componentBackValue != Binding.DoNothing ) &&
+                        !Object.Equals( componentBackValue, component ) )
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
         private static CultureInfo GetBindingSourceCulture( BindingExpression? bindingExpression )
         {
             CultureInfo? sourceCulture = null;
@@ -304,6 +441,97 @@ namespace Utilities.WPF.Net.MarkupExtensions
             }
 
             return sourceCulture ?? CultureInfo.InvariantCulture;
+        }
+
+        private static object? ConvertValue( object? value, Type targetType, CultureInfo culture )
+        {
+            if( ( value != null ) && ( targetType != typeof( object ) ) && !targetType.IsAssignableFrom( value.GetType() ) )
+            {
+                try
+                {
+                    return Convert.ChangeType( value, targetType, culture );
+                }
+                catch
+                {
+                }
+            }
+
+            return value;
+        }
+
+        protected virtual BindingMode GetBindingMode()
+        {
+            var mode = BindingMode.Default;
+
+            foreach( var component in Components )
+            {
+                BindingMode componentMode;
+
+                if( component is MultiBindBase customBinding )
+                {
+                    componentMode = customBinding.GetBindingMode();
+                }
+                else if( component is Bind binding )
+                {
+                    componentMode = binding.Mode;
+                }
+                else
+                {
+                    componentMode = BindingMode.Default;
+                }
+
+                if( componentMode == BindingMode.OneWayToSource )
+                {
+                    if( ( mode == BindingMode.OneWay ) || ( mode == BindingMode.OneTime ) )
+                    {
+                        mode = BindingMode.TwoWay;
+                    }
+                }
+                else if( ( componentMode == BindingMode.OneWay ) || ( mode == BindingMode.OneTime ) )
+                {
+                    if( mode == BindingMode.OneWayToSource )
+                    {
+                        mode = BindingMode.TwoWay;
+                    }
+                }
+
+                if( componentMode < mode )
+                {
+                    mode = componentMode;
+                }
+            }
+
+            return mode;
+        }
+
+        protected virtual UpdateSourceTrigger GetUpdateSourceTrigger()
+        {
+            var trigger = UpdateSourceTrigger.Default;
+
+            foreach( var component in Components )
+            {
+                UpdateSourceTrigger componentTrigger;
+
+                if( component is MultiBindBase customBinding )
+                {
+                    componentTrigger = customBinding.GetUpdateSourceTrigger();
+                }
+                else if( component is Bind binding )
+                {
+                    componentTrigger = binding.UpdateSourceTrigger;
+                }
+                else
+                {
+                    componentTrigger = UpdateSourceTrigger.Default;
+                }
+
+                if( componentTrigger > trigger )
+                {
+                    trigger = componentTrigger;
+                }
+            }
+
+            return trigger;
         }
 
         //===========================================================================

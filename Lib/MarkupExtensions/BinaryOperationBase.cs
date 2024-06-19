@@ -2,7 +2,10 @@
 /// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
+using System;
+using System.Diagnostics;
 using System.Globalization;
+using System.Windows;
 
 namespace Utilities.WPF.Net.MarkupExtensions
 {
@@ -83,6 +86,48 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <param name="culture">Culture to use to convert the value.</param>
         /// <returns>Converted value.</returns>
         protected abstract object? ConvertOperandBValue( object? value, CultureInfo culture );
+
+        protected override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, CultureInfo[] sourceCultures )
+        {
+            Debug.Assert( sourceTypes.Length == NUM_OPERANDS );
+            Debug.Assert( sourceCultures.Length == NUM_OPERANDS );
+
+            var backValues = CalculateBackValues( targetValue );
+
+            if( backValues == null )
+            {
+                return null;
+            }
+
+            var result = new object?[ NUM_OPERANDS ];
+
+            try
+            {
+                result[ A_INDEX ] = Helper.ConvertValue( backValues.Value.a, sourceTypes[ A_INDEX ], sourceCultures[ A_INDEX ] );
+            }
+            catch
+            {
+                result[ A_INDEX ] = DependencyProperty.UnsetValue;
+            }
+
+            try
+            {
+                result[ B_INDEX ] = Helper.ConvertValue( backValues.Value.b, sourceTypes[ B_INDEX ], sourceCultures[ B_INDEX ] );
+            }
+            catch
+            {
+                result[ B_INDEX ] = DependencyProperty.UnsetValue;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Calculates the values to assign to the operands when converting back the operation value.
+        /// </summary>
+        /// <param name="targetValue">Value of the operation.</param>
+        /// <returns>The values of the operands, or <c>null</c> if the calculation cannot be performed or is not feasible.</returns>
+        protected abstract (object? a, object? b)? CalculateBackValues( object? targetValue );
 
         //===========================================================================
         //                           PRIVATE CONSTANTS

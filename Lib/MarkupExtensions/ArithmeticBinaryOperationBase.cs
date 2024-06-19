@@ -63,6 +63,11 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <returns></returns>
         protected abstract double CalculateValue( double a, double b );
 
+        protected override (object? a, object? b)? CalculateBackValues( object? targetValue )
+        {
+            return null;
+        }
+
         //===========================================================================
         //                            PRIVATE METHODS
         //===========================================================================
