@@ -103,6 +103,89 @@ namespace Utilities.WPF.Net.MarkupExtensions
             };
         }
 
+        /// <summary>
+        /// Gets the binding mode for the multi-bind.
+        /// </summary>
+        /// <returns>Binding mode calculated from the nested bindings' modes.</returns>
+        protected virtual BindingMode GetBindingMode()
+        {
+            var mode = BindingMode.Default;
+
+            foreach( var component in Components )
+            {
+                BindingMode componentMode;
+
+                if( component is MultiBindBase customBinding )
+                {
+                    componentMode = customBinding.GetBindingMode();
+                }
+                else if( component is Bind binding )
+                {
+                    componentMode = binding.Mode;
+                }
+                else
+                {
+                    componentMode = BindingMode.Default;
+                }
+
+                if( componentMode == BindingMode.OneWayToSource )
+                {
+                    if( ( mode == BindingMode.OneWay ) || ( mode == BindingMode.OneTime ) )
+                    {
+                        mode = BindingMode.TwoWay;
+                    }
+                }
+                else if( ( componentMode == BindingMode.OneWay ) || ( mode == BindingMode.OneTime ) )
+                {
+                    if( mode == BindingMode.OneWayToSource )
+                    {
+                        mode = BindingMode.TwoWay;
+                    }
+                }
+
+                if( componentMode < mode )
+                {
+                    mode = componentMode;
+                }
+            }
+
+            return mode;
+        }
+
+        /// <summary>
+        /// Gets the update source trigger for the multi-bind.
+        /// </summary>
+        /// <returns>Update source trigger calculated from the nested bindings' triggers.</returns>
+        protected virtual UpdateSourceTrigger GetUpdateSourceTrigger()
+        {
+            var trigger = UpdateSourceTrigger.Default;
+
+            foreach( var component in Components )
+            {
+                UpdateSourceTrigger componentTrigger;
+
+                if( component is MultiBindBase customBinding )
+                {
+                    componentTrigger = customBinding.GetUpdateSourceTrigger();
+                }
+                else if( component is Bind binding )
+                {
+                    componentTrigger = binding.UpdateSourceTrigger;
+                }
+                else
+                {
+                    componentTrigger = UpdateSourceTrigger.Default;
+                }
+
+                if( componentTrigger > trigger )
+                {
+                    trigger = componentTrigger;
+                }
+            }
+
+            return trigger;
+        }
+
         //===========================================================================
         //                          PRIVATE NESTED TYPES
         //===========================================================================
@@ -457,81 +540,6 @@ namespace Utilities.WPF.Net.MarkupExtensions
             }
 
             return value;
-        }
-
-        protected virtual BindingMode GetBindingMode()
-        {
-            var mode = BindingMode.Default;
-
-            foreach( var component in Components )
-            {
-                BindingMode componentMode;
-
-                if( component is MultiBindBase customBinding )
-                {
-                    componentMode = customBinding.GetBindingMode();
-                }
-                else if( component is Bind binding )
-                {
-                    componentMode = binding.Mode;
-                }
-                else
-                {
-                    componentMode = BindingMode.Default;
-                }
-
-                if( componentMode == BindingMode.OneWayToSource )
-                {
-                    if( ( mode == BindingMode.OneWay ) || ( mode == BindingMode.OneTime ) )
-                    {
-                        mode = BindingMode.TwoWay;
-                    }
-                }
-                else if( ( componentMode == BindingMode.OneWay ) || ( mode == BindingMode.OneTime ) )
-                {
-                    if( mode == BindingMode.OneWayToSource )
-                    {
-                        mode = BindingMode.TwoWay;
-                    }
-                }
-
-                if( componentMode < mode )
-                {
-                    mode = componentMode;
-                }
-            }
-
-            return mode;
-        }
-
-        protected virtual UpdateSourceTrigger GetUpdateSourceTrigger()
-        {
-            var trigger = UpdateSourceTrigger.Default;
-
-            foreach( var component in Components )
-            {
-                UpdateSourceTrigger componentTrigger;
-
-                if( component is MultiBindBase customBinding )
-                {
-                    componentTrigger = customBinding.GetUpdateSourceTrigger();
-                }
-                else if( component is Bind binding )
-                {
-                    componentTrigger = binding.UpdateSourceTrigger;
-                }
-                else
-                {
-                    componentTrigger = UpdateSourceTrigger.Default;
-                }
-
-                if( componentTrigger > trigger )
-                {
-                    trigger = componentTrigger;
-                }
-            }
-
-            return trigger;
         }
 
         //===========================================================================
