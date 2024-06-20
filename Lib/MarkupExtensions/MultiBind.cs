@@ -227,7 +227,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         }
 
         /// <inheritdoc/>
-        protected override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, CultureInfo[] sourceCultures )
+        protected override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, ComponentValue[] currentValues )
         {
             if( Converter != null )
             {

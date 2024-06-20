@@ -2,8 +2,6 @@
 /// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
-using System;
-using System.Globalization;
 using System.Windows.Markup;
 
 namespace Utilities.WPF.Net.MarkupExtensions
@@ -12,7 +10,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
     /// Base class for arithmetic binary operations.
     /// </summary>
     [MarkupExtensionReturnType( typeof( double ) )]
-    public abstract class ArithmeticBinaryOperationBase : BinaryOperationBase<double, double>
+    public abstract class ArithmeticBinaryOperationBase : BinaryOperationBase<double, double, double>
     {
         //===========================================================================
         //                          PROTECTED CONSTRUCTORS
@@ -30,27 +28,65 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected override sealed (object? value, CultureInfo culture) CalculateOperationValue( double a, double b )
+        protected override (double a, double b)? CalculateBackValues( double targetValue, ComponentValue a, ComponentValue b )
         {
-            var operationValue = CalculateValue( a, b );
+            if( a.IsReversible && b.IsReversible )
+            {
+                // Both operands are reversible => reverse operation is not possible
+                return null;
+            }
 
-            return (operationValue, CultureInfo.InvariantCulture);
+            double? aUsed = a.IsReversible ? null : (double) a.Value!;
+            double? bUsed = b.IsReversible ? null : (double) b.Value!;
+
+            if( ( aUsed != null ) && ( bUsed != null ) )
+            {
+                // Neither operand is reversible.
+
+                if( targetValue != CalculateValue( aUsed.Value, bUsed.Value ) )
+                {
+                    // The target value is not the result of the operation.
+                    return null;
+                }
+                else
+                {
+                    return (aUsed.Value, bUsed.Value);
+                }
+            }
+            else if( aUsed == null )
+            {
+                // First operand is reversible.
+
+                double bValue = bUsed!.Value;
+                double aValue = CalculateBackValueA( targetValue, bValue );
+
+                return (aValue, bValue);
+            }
+            else
+            {
+                // Second operand is reversible.
+
+                double aValue = aUsed!.Value;
+                double bValue = CalculateBackValueB( targetValue, aValue );
+
+                return (aValue, bValue);
+            }
         }
 
         /// <summary>
-        /// Calculates the value of the operation.
+        /// Calculates the values to assign to the first operand when converting back the operation value and the second operand has a fixed value.
         /// </summary>
-        /// <remarks>
-        /// Must be implemented by derived classes to perform the actual calculation.
-        /// </remarks>
-        /// <param name="a">First operand value.</param>
+        /// <param name="targetValue">Value of the operation.</param>
         /// <param name="b">Second operand value.</param>
-        /// <returns></returns>
-        protected abstract double CalculateValue( double a, double b );
+        /// <returns>Value of the first operand.</returns>
+        protected abstract double CalculateBackValueA( double targetValue, double b );
 
-        protected override (double a, double b)? CalculateOperationBackValues( object? targetValue )
-        {
-            return null;
-        }
+        /// <summary>
+        /// Calculates the values to assign to the second operand when converting back the operation value and the first operand has a fixed value.
+        /// </summary>
+        /// <param name="targetValue">Value of the operation.</param>
+        /// <param name="a">First operand value.</param>
+        /// <returns>Value of the second operand.</returns>
+        protected abstract double CalculateBackValueB( double targetValue, double a );
     }
 }

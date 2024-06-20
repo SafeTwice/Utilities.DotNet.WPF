@@ -129,10 +129,10 @@ namespace Utilities.WPF.Net.MarkupExtensions
         protected abstract (object? value, CultureInfo culture) ConvertValue( object? value, CultureInfo culture );
 
         /// <inheritdoc/>
-        protected sealed override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, CultureInfo[] sourceCultures )
+        protected sealed override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, ComponentValue[] currentValues )
         {
             Debug.Assert( sourceTypes.Length >= PARAMETER_TYPES.Length );
-            Debug.Assert( sourceCultures.Length >= PARAMETER_TYPES.Length );
+            Debug.Assert( currentValues.Length >= PARAMETER_TYPES.Length );
 
             var result = new object?[ sourceTypes.Length ];
             for( var i = 0; i < result.Length; i++ )
@@ -140,7 +140,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
                 result[ i ] = Binding.DoNothing;
             }
 
-            result[ VALUE_INDEX ] = ConvertBackValue( targetValue, targetCulture, sourceTypes[ VALUE_INDEX ], sourceCultures[ VALUE_INDEX ] );
+            result[ VALUE_INDEX ] = ConvertBackValue( targetValue, targetCulture, sourceTypes[ VALUE_INDEX ], currentValues[ VALUE_INDEX ].Culture );
 
             return result;
         }

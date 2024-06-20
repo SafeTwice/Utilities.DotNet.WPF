@@ -40,5 +40,17 @@ namespace Utilities.WPF.Net.MarkupExtensions
         {
             return ( a * b );
         }
+
+        /// <inheritdoc/>
+        protected override double CalculateBackValueA( double targetValue, double b )
+        {
+            return ( targetValue / b );
+        }
+
+        /// <inheritdoc/>
+        protected override double CalculateBackValueB( double targetValue, double a )
+        {
+            return ( targetValue / a );
+        }
     }
 }
