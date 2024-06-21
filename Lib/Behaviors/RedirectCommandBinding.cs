@@ -22,7 +22,7 @@ namespace Utilities.WPF.Net.Behaviors
         /// <summary>
         /// Dependency property for the source command to redirect.
         /// </summary>
-        public static readonly DependencyProperty SourceCommandProperty = 
+        public static readonly DependencyProperty SourceCommandProperty =
             DependencyProperty.Register( "SourceCommand", typeof( ICommand ), typeof( RedirectCommandBinding ),
                 new PropertyMetadata( null, OnSourceCommandChanged ) );
 

@@ -2,7 +2,6 @@
 /// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
-using System;
 using System.Windows.Input;
 
 namespace Utilities.WPF.Net.Commands
