@@ -8,7 +8,7 @@ using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
 
-namespace Utilities.WPF.Net.MarkupExtensions
+namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
     /// Markup extension that converts an object to a double-precision floating-point number.

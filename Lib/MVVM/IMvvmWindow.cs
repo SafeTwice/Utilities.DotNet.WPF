@@ -4,7 +4,7 @@
 
 using System.Windows;
 
-namespace Utilities.WPF.Net.MVVM
+namespace Utilities.DotNet.WPF.MVVM
 {
     /// <summary>
     /// Represents the window associated to a viewmodel.

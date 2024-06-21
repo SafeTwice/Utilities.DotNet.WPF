@@ -8,7 +8,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Utilities.WPF.Net.MVVM
+namespace Utilities.DotNet.WPF.MVVM
 {
     /// <summary>
     /// Data template selector that is configured with associations of data templates to object types and then

@@ -2,7 +2,7 @@
 /// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
-namespace Utilities.WPF.Net.MarkupExtensions
+namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
     /// Markup extension that adds two numbers (A + B).

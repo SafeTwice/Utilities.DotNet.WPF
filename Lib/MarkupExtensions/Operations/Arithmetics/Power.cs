@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Utilities.WPF.Net.MarkupExtensions
+namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
     /// Markup extension that calculates the power of two numbers (A ^ B).

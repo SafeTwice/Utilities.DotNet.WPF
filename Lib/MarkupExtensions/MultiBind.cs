@@ -11,7 +11,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Markup;
 
-namespace Utilities.WPF.Net.MarkupExtensions
+namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
     /// <see cref="MultiBinding"/> that can be passed as a parameter to a <see cref="MarkupExtension"/> and

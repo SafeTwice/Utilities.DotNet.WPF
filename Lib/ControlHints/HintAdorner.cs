@@ -6,7 +6,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Media;
 
-namespace Utilities.WPF.Net.ControlHints
+namespace Utilities.DotNet.WPF.ControlHints
 {
     /// <summary>
     /// Adorner for the hint.

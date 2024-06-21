@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 
-namespace Utilities.WPF.Net.MarkupExtensions
+namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
     /// Base class for binary operations.

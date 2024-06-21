@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 
-namespace Utilities.WPF.Net.Windows
+namespace Utilities.DotNet.WPF.Windows
 {
     /// <summary>
     /// Window utilities.

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Media;
 
-namespace Utilities.WPF.Net.Extensions
+namespace Utilities.DotNet.WPF.Extensions
 {
     /// <summary>
     /// Extension methods for <see cref="DependencyObject"/>.

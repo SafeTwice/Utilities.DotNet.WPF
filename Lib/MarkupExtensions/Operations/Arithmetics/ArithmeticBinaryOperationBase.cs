@@ -4,7 +4,7 @@
 
 using System.Windows.Markup;
 
-namespace Utilities.WPF.Net.MarkupExtensions
+namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
     /// Base class for arithmetic binary operations.

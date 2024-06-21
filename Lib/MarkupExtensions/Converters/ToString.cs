@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Markup;
 
-namespace Utilities.WPF.Net.MarkupExtensions
+namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
     /// Markup extension that converts an object to a string.

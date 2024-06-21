@@ -6,7 +6,7 @@ using Microsoft.Xaml.Behaviors;
 using System.Windows;
 using System.Windows.Input;
 
-namespace Utilities.WPF.Net.Behaviors
+namespace Utilities.DotNet.WPF.Behaviors
 {
     /// <summary>
     /// Behavior to redirect a command received by an <see cref="UIElement"/> (normally a standard <see cref="RoutedCommand"/>

@@ -6,7 +6,7 @@
 
 using System.Windows;
 
-namespace Utilities.WPF.Net.Windows
+namespace Utilities.DotNet.WPF.Windows
 {
     public class WindowExtensions : DependencyObject
     {

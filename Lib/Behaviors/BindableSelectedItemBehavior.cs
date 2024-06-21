@@ -5,9 +5,9 @@
 using Microsoft.Xaml.Behaviors;
 using System.Windows;
 using System.Windows.Controls;
-using Utilities.WPF.Net.Extensions;
+using Utilities.DotNet.WPF.Extensions;
 
-namespace Utilities.WPF.Net.Behaviors
+namespace Utilities.DotNet.WPF.Behaviors
 {
     /// <summary>
     /// Behavior to bind the selected item of a TreeView to a view model property.

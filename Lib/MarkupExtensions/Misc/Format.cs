@@ -6,7 +6,7 @@ using System;
 using System.Globalization;
 using System.Windows.Markup;
 
-namespace Utilities.WPF.Net.MarkupExtensions
+namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
     /// Markup extension that represents a pair of values.

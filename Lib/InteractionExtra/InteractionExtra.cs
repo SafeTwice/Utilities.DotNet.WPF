@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Windows;
 using TriggerBase = Microsoft.Xaml.Behaviors.TriggerBase;
 
-namespace Utilities.WPF.Net.InteractionExtra
+namespace Utilities.DotNet.WPF.InteractionExtra
 {
     public class Behaviors : List<Behavior>
     {

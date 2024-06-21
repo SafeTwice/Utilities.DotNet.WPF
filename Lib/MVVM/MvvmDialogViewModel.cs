@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Utilities.WPF.Net.MVVM
+namespace Utilities.DotNet.WPF.MVVM
 {
     /// <summary>
     /// Simple implementation of a viewmodel that is associated to an IMvvmDialog.

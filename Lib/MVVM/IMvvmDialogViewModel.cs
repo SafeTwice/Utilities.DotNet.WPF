@@ -2,7 +2,7 @@
 /// @copyright  Copyright (c) 2023 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
-namespace Utilities.WPF.Net.MVVM
+namespace Utilities.DotNet.WPF.MVVM
 {
     /// <summary>
     /// Represents a viewmodel that is associated to an IMvvmDialog.

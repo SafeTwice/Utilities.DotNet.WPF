@@ -4,7 +4,7 @@
 
 using System.Windows.Controls;
 
-namespace Utilities.WPF.Net.Extensions
+namespace Utilities.DotNet.WPF.Extensions
 {
     /// <summary>
     /// Extension methods for <see cref="TreeView"/>.

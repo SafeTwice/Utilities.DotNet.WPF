@@ -8,10 +8,10 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Markup;
 
-namespace Utilities.WPF.Net.MarkupExtensions
+namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
-    /// Markup extension that selects a value based on a condition.
+    /// Markup extension to make <see cref="Thickness"/> bindable.
     /// </summary>
     [MarkupExtensionReturnType( typeof( Thickness ) )]
     public sealed class ThicknessExtension : BindingMarkupExtensionBase

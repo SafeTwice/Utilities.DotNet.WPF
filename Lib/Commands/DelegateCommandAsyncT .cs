@@ -6,7 +6,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace Utilities.WPF.Net.Commands
+namespace Utilities.DotNet.WPF.Commands
 {
     /// <summary>
     /// <see cref="ICommand"/> that delegates its execution to an action which accepts a parameter that is executed asynchronously.

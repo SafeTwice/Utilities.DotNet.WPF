@@ -5,7 +5,7 @@
 using System;
 using System.Globalization;
 
-namespace Utilities.WPF.Net.MarkupExtensions
+namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
     /// Helper class.

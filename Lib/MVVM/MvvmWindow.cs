@@ -3,9 +3,9 @@
 /// @license    See LICENSE.txt
 
 using System.Windows;
-using Utilities.WPF.Net.Windows;
+using Utilities.DotNet.WPF.Windows;
 
-namespace Utilities.WPF.Net.MVVM
+namespace Utilities.DotNet.WPF.MVVM
 {
     /// <summary>
     /// Basic implementation of a window associated to a viewmodel.

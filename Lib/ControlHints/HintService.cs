@@ -8,7 +8,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Documents;
 
-namespace Utilities.WPF.Net.ControlHints
+namespace Utilities.DotNet.WPF.ControlHints
 {
     /// <summary>
     /// Provides the Hint attached property to display a hint on empty controls.

@@ -6,7 +6,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace Utilities.WPF.Net.MVVM
+namespace Utilities.DotNet.WPF.MVVM
 {
     /// <summary>
     /// Base class for data template selectors that create data templates from the view type that correspond to
