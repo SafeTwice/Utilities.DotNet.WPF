@@ -55,11 +55,11 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected sealed override (object? value, CultureInfo culture) CalculateValue( object?[] parameterValues, CultureInfo[] parameterCultures, CultureInfo targetCulture )
+        protected sealed override (object? value, CultureInfo? culture) CalculateValue( object?[] parameterValues, CultureInfo?[] parameterCultures, CultureInfo targetCulture )
         {
             var a = (TA?) parameterValues[ A_INDEX ];
             var b = (TB?) parameterValues[ B_INDEX ];
-            
+
             object? operationValue;
 
             if( ( a == null ) || ( b == null ) )
@@ -77,7 +77,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
                 }
             }
 
-            return (operationValue, CultureInfo.InvariantCulture);
+            return (operationValue, null);
         }
 
         /// <summary>

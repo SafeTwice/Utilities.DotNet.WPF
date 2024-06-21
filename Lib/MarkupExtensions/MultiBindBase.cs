@@ -6,11 +6,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Markup;
@@ -27,18 +27,48 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        public override object? ProvideValue( IServiceProvider serviceProvider )
+        public override object? ProvideValue( IServiceProvider? serviceProvider )
         {
-            var binding = PrepareBinding();
+            if( serviceProvider == null )
+            {
+                return this;
+            }
+
+            var valueProvider = (IProvideValueTarget?) serviceProvider.GetService( typeof( IProvideValueTarget ) );
+            if( valueProvider == null )
+            {
+                return this;
+            }
+
+            var targetObject = valueProvider.TargetObject;
+            var targetProperty = valueProvider.TargetProperty;
+
+            var forceDynamic = IsTargetCultureRelevant( targetProperty );
+
+            var binding = PrepareBinding( forceDynamic );
 
             if( binding != null )
             {
-                return ProvideDynamicValue( serviceProvider, binding );
+                return ProvideDynamicValue( serviceProvider, binding, targetObject, targetProperty );
             }
             else
             {
-                return ProvideStaticValue( serviceProvider );
+                return ProvideStaticValue( targetObject, targetProperty );
             }
+        }
+
+        private bool IsTargetCultureRelevant( object targetProperty )
+        {
+            if( targetProperty is DependencyProperty targetDependencyProperty )
+            {
+                var targetPropertyType = targetDependencyProperty.PropertyType;
+                if( targetPropertyType == typeof( string ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         //===========================================================================
@@ -69,7 +99,8 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <param name="targetType">Type of the target.</param>
         /// <param name="targetCulture">Culture of the target.</param>
         /// <returns>Value of the binding and its associated culture.</returns>
-        protected abstract (object? value, CultureInfo culture) CalculateValue( object?[] componentValues, CultureInfo[] componentCultures, Type targetType, CultureInfo targetCulture );
+        protected abstract (object? value, CultureInfo? culture) CalculateValue( object?[] componentValues, CultureInfo?[] componentCultures,
+                                                                                 Type targetType, CultureInfo targetCulture );
 
         /// <summary>
         /// Calculates the source values for the components from the effective value of the binding target.
@@ -120,17 +151,17 @@ namespace Utilities.WPF.Net.MarkupExtensions
             public object? Value { get; internal set; }
 
             /// <summary>
-            /// Culture of the component.
+            /// Culture of the component (set if relevant).
             /// </summary>
-            public CultureInfo Culture { get; }
+            public CultureInfo? Culture { get; }
 
             /// <summary>
-            /// Indicates whether the component is reversible (i.e., it's source is or has nested bindings
+            /// Indicates whether the component is reversible (i.e., it's source is a binding or has nested bindings
             /// that back-propagate values to the binding source).
             /// </summary>
             public bool IsReversible { get; }
 
-            public ComponentValue( object? value, CultureInfo culture, bool isReversible )
+            public ComponentValue( object? value, CultureInfo? culture, bool isReversible )
             {
                 Value = value;
                 Culture = culture;
@@ -152,7 +183,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
             /// </summary>
             public ComponentValue[] ComponentsValues { get; }
 
-            public MultiBindValue( object? value, CultureInfo culture, bool isReversible, ComponentValue[] componentRecords ) : base( value, culture, isReversible )
+            public MultiBindValue( object? value, CultureInfo? culture, bool isReversible, ComponentValue[] componentRecords ) : base( value, culture, isReversible )
             {
                 ComponentsValues = componentRecords;
             }
@@ -160,8 +191,17 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         private class InternalConverter : IMultiValueConverter
         {
+            public MultiBindingExpression? BindingExpression { get; set; }
+
+            public InternalConverter( MultiBindBase binding )
+            {
+                m_binding = binding;
+            }
+
             public object? Convert( object?[] bindingValues, Type targetType, object? parameter, CultureInfo culture )
             {
+                Debug.Assert( BindingExpression != null );
+
                 var bindingExpressions = BindingExpression!.BindingExpressions;
                 Debug.Assert( bindingValues.Length == bindingExpressions.Count );
 
@@ -172,19 +212,20 @@ namespace Utilities.WPF.Net.MarkupExtensions
                     return DependencyProperty.UnsetValue;
                 }
 
-                var calculatedValue = Binding!.CalculateEffectiveValue( bindingValues.GetEnumerator(), bindingExpressions.GetEnumerator(),
-                                                                        targetType, culture );
+                var calculatedValue = m_binding.CalculateEffectiveValue( bindingValues.GetEnumerator(), bindingExpressions.GetEnumerator(), targetType, culture );
 
                 if( mode == BindingMode.TwoWay )
                 {
                     m_lastValue = calculatedValue;
                 }
 
-                return ConvertValue( calculatedValue.Value, targetType, culture );
+                return Helper.TryConvertValue( calculatedValue.Value, targetType, culture );
             }
 
             public object?[]? ConvertBack( object? value, Type[] targetTypes, object? parameter, CultureInfo culture )
             {
+                Debug.Assert( BindingExpression != null );
+
                 var bindingExpressions = BindingExpression!.BindingExpressions;
 
                 var targetTypesEnumerator = ( (IEnumerable<Type>) targetTypes ).GetEnumerator();
@@ -194,10 +235,10 @@ namespace Utilities.WPF.Net.MarkupExtensions
                 if( m_lastValue == null )
                 {
                     // This should only happen when binding mode is OneWayToSource.
-                    m_lastValue = Binding!.PrepareMultiBindValue( bindingExpressions, typeof( object ), culture );
+                    m_lastValue = m_binding.PrepareMultiBindValue( bindingExpressions, typeof( object ), culture );
                 }
 
-                if( Binding!.CalculateBackBindingValues( value, culture, targetTypesEnumerator, m_lastValue, bindingValues ) )
+                if( m_binding.CalculateBackBindingValues( value, culture, targetTypesEnumerator, m_lastValue, bindingValues ) )
                 {
                     var result = bindingValues.ToArray();
 
@@ -211,36 +252,33 @@ namespace Utilities.WPF.Net.MarkupExtensions
                 }
             }
 
-            public MultiBindBase? Binding { get; set; }
-            public MultiBindingExpression? BindingExpression { get; set; }
-
+            private readonly MultiBindBase m_binding;
             private MultiBindValue? m_lastValue;
         }
+
 
         //===========================================================================
         //                            PRIVATE METHODS
         //===========================================================================
 
-        private MultiBinding? PrepareBinding()
+        private MultiBinding? PrepareBinding( bool forceCreation )
         {
             MultiBinding? multiBinding = null;
 
             var bindings = GetBindings();
 
-            if( bindings.Count() > 0 )
+            if( forceCreation || bindings.Any() )
             {
-                var converter = new InternalConverter();
+                var converter = new InternalConverter( this );
 
                 multiBinding = CreateBinding();
 
                 multiBinding.Converter = converter;
 
-                converter.Binding = this;
-            }
-
-            foreach( var binding in bindings )
-            {
-                multiBinding!.Bindings.Add( binding.InternalBinding );
+                foreach( var binding in bindings )
+                {
+                    multiBinding.Bindings.Add( binding.InternalBinding );
+                }
             }
 
             return multiBinding;
@@ -248,7 +286,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         private IEnumerable<Bind> GetBindings()
         {
-            foreach( var value in ComponentRawValues )
+            foreach( var value in RawComponentValues )
             {
                 if( value is Bind binding )
                 {
@@ -264,31 +302,20 @@ namespace Utilities.WPF.Net.MarkupExtensions
             }
         }
 
-        private object ProvideDynamicValue( IServiceProvider serviceProvider, MultiBinding binding )
+        private object ProvideDynamicValue( IServiceProvider serviceProvider, MultiBinding multiBinding, object? targetObject, object? targetProperty )
         {
-            if( serviceProvider == null )
-            {
-                return this;
-            }
-
-            var valueProvider = serviceProvider.GetService( typeof( IProvideValueTarget ) ) as IProvideValueTarget;
-
-            var targetObject = valueProvider?.TargetObject;
-
             if( ( targetObject == null ) || ( targetObject is MultiBindBase ) )
             {
                 return this;
             }
 
-            var targetProperty = valueProvider?.TargetProperty;
-
             if( ( targetObject is DependencyObject ) && ( targetProperty is DependencyProperty ) )
             {
-                var providedValue = binding.ProvideValue( serviceProvider );
+                var providedValue = multiBinding.ProvideValue( serviceProvider );
 
                 // Store the binding expression to obtain the nested bindings expressions once the binding is
                 // attached and the nested binding expressions are available.
-                ( (InternalConverter) binding.Converter ).BindingExpression = ( providedValue as MultiBindingExpression );
+                ( (InternalConverter) multiBinding.Converter ).BindingExpression = (MultiBindingExpression) providedValue;
 
                 return providedValue;
             }
@@ -298,20 +325,21 @@ namespace Utilities.WPF.Net.MarkupExtensions
             }
         }
 
-        private object? ProvideStaticValue( IServiceProvider serviceProvider )
+        private object? ProvideStaticValue( object? targetObject, object? targetProperty )
         {
-            var valueProvider = serviceProvider.GetService( typeof( IProvideValueTarget ) ) as IProvideValueTarget;
-
-            var targetObject = valueProvider?.TargetObject;
-            var targetProperty = valueProvider?.TargetProperty;
-
             Type targetType;
 
             if( targetProperty is DependencyProperty targetDependencyProperty )
             {
+                if( !( targetObject is DependencyObject ) )
+                {
+                    // This is the case when instantiated inside a template.
+                    return this;
+                }
+
                 targetType = targetDependencyProperty.PropertyType;
             }
-            else if( !( targetObject is MultiBindBase ) && ( targetProperty is PropertyInfo targetPropertyInfo ) )
+            else if( targetProperty is PropertyInfo targetPropertyInfo )
             {
                 targetType = targetPropertyInfo.PropertyType;
             }
@@ -322,10 +350,17 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
             var targetCulture = GetTargetCulture( targetObject );
 
-            var emptyBindingExpressions = new List<BindingExpression>();
-            var calculatedValue = CalculateEffectiveValue( Array.Empty<object>().GetEnumerator(), emptyBindingExpressions.GetEnumerator(), targetType, targetCulture );
+            var staticValue = GetStaticValue( targetType, targetCulture );
 
-            return ConvertValue( calculatedValue.Value, targetType, targetCulture );
+            return Helper.TryConvertValue( staticValue, targetType, targetCulture );
+        }
+
+        public object? GetStaticValue( Type targetType, CultureInfo targetCulture )
+        {
+            var emptyBindingExpressions = new List<BindingExpression>();
+            var calculatedValue = CalculateEffectiveValue( Array.Empty<object>().GetEnumerator(), emptyBindingExpressions.GetEnumerator(),
+                                                           targetType, targetCulture );
+            return calculatedValue.Value;
         }
 
         private static CultureInfo GetTargetCulture( object? targetObject )
@@ -370,39 +405,37 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <param name="targetCulture">Culture of the target.</param>
         /// <returns>Effective value of the binding and its associated culture.</returns>
         private MultiBindValue CalculateEffectiveValue( IEnumerator bindingValues, IEnumerator<BindingExpressionBase> bindingExpressions,
-                                                           Type targetType, CultureInfo targetCulture )
+                                                        Type targetType, CultureInfo targetCulture )
         {
-            var componentRecords = new ComponentValue[ ComponentRawValues.Count ];
-
-            var effectiveComponentValues = new object?[ ComponentRawValues.Count ];
-            var componentCultures = new CultureInfo[ ComponentRawValues.Count ];
+            var componentValues = new ComponentValue[ RawComponentValues.Count ];
 
             var isReversible = false;
+
             object? errorValue = null;
 
             // Initialize the component types is necessary (e.g, MultiBind does not initialize them).
-            while( ComponentTypes.Count < ComponentRawValues.Count )
+            while( ComponentTypes.Count < RawComponentValues.Count )
             {
                 ComponentTypes.Add( typeof( object ) );
             }
 
-            for( int i = 0; i < ComponentRawValues.Count; i++ )
+            for( int i = 0; i < RawComponentValues.Count; i++ )
             {
-                var component = ComponentRawValues[ i ];
+                var rawComponentValue = RawComponentValues[ i ];
                 var componentType = ComponentTypes[ i ];
 
-                ComponentValue componentRecord;
+                ComponentValue componentValue;
 
-                if( component is MultiBindBase customBinding )
+                if( rawComponentValue is MultiBindBase markup )
                 {
-                    componentRecord = customBinding.CalculateEffectiveValue( bindingValues, bindingExpressions, componentType, targetCulture );
+                    componentValue = markup.CalculateEffectiveValue( bindingValues, bindingExpressions, componentType, targetCulture );
                 }
-                else if( component is Bind binding )
+                else if( rawComponentValue is Bind binding )
                 {
                     bindingValues.MoveNext();
                     bindingExpressions.MoveNext();
 
-                    var bindingExpression = bindingExpressions.Current as BindingExpression;
+                    var bindingExpression = (BindingExpression) bindingExpressions.Current;
 
                     var bindingValue = bindingValues.Current;
                     var bindingCulture = binding.ConverterCulture ?? GetBindingSourceCulture( bindingExpression );
@@ -410,47 +443,48 @@ namespace Utilities.WPF.Net.MarkupExtensions
                     var bindingMode = bindingExpression?.ParentBinding.Mode;
                     var isBindingReversible = ( ( bindingMode == BindingMode.TwoWay ) || ( bindingMode == BindingMode.OneWayToSource ) );
 
-                    componentRecord = new ComponentValue( bindingValue, bindingCulture, isBindingReversible );
+                    componentValue = new ComponentValue( bindingValue, bindingCulture, isBindingReversible );
                 }
                 else
                 {
-                    componentRecord = new ComponentValue( component, CultureInfo.InvariantCulture, false );
+                    componentValue = new ComponentValue( rawComponentValue, CultureInfo.InvariantCulture, false );
                 }
 
-                isReversible |= componentRecord.IsReversible;
+                isReversible |= componentValue.IsReversible;
 
-                if( componentRecord.Value == Binding.DoNothing )
+                if( componentValue.Value == Binding.DoNothing )
                 {
                     errorValue = Binding.DoNothing;
                 }
-                else if( componentRecord.Value == DependencyProperty.UnsetValue )
+                else if( componentValue.Value == DependencyProperty.UnsetValue )
                 {
-                    componentRecord.Value = GetDefaultValue( componentType );
+                    componentValue.Value = GetDefaultValue( componentType );
                 }
                 else
                 {
                     // Convert the component value to its expected type (if necessary).
                     // Note: Markup extensions can declare components with type Object in order to convert the value
                     // later in the calculation process when CalculateValue() is called.
-                    componentRecord.Value = Helper.ConvertValue( componentRecord.Value, componentType, componentRecord.Culture );
+                    componentValue.Value = Helper.ConvertValue( componentValue.Value, componentType, componentValue.Culture );
                 }
 
-                componentRecords[ i ] = componentRecord;
-                effectiveComponentValues[ i ] = componentRecord.Value;
-                componentCultures[ i ] = componentRecord.Culture;
+                componentValues[ i ] = componentValue;
             }
 
             if( errorValue != null )
             {
-                return new MultiBindValue( errorValue, CultureInfo.InvariantCulture, isReversible, componentRecords );
+                return new MultiBindValue( errorValue, null, isReversible, componentValues );
             }
+
+            var effectiveComponentValues = componentValues.Select( c => c.Value ).ToArray();
+            var componentCultures = componentValues.Select( c => c.Culture ).ToArray();
 
             var calculatedValue = CalculateValue( effectiveComponentValues, componentCultures, targetType, targetCulture );
 
             // Note: The calculated value is not converted to the target type because it may already have be converted when calculating the
             // value or it may be converted later by the caller.
 
-            return new MultiBindValue( calculatedValue.value, calculatedValue.culture, isReversible, componentRecords );
+            return new MultiBindValue( calculatedValue.value, calculatedValue.culture, isReversible, componentValues );
         }
 
         /// <summary>
@@ -465,18 +499,18 @@ namespace Utilities.WPF.Net.MarkupExtensions
         private bool CalculateBackBindingValues( object? targetValue, CultureInfo targetCulture, IEnumerator<Type> bindingSourceTypes,
                                                  MultiBindValue currentValue, ICollection<object?> bindingValues )
         {
-            var sourceTypes = new Type[ ComponentRawValues.Count ];
+            var sourceTypes = new Type[ RawComponentValues.Count ];
             var currentComponentValues = currentValue.ComponentsValues;
 
             Debug.Assert( sourceTypes.Length == currentComponentValues.Length );
 
             // Get source types
-            for( int i = 0; i < ComponentRawValues.Count; i++ )
+            for( int i = 0; i < RawComponentValues.Count; i++ )
             {
-                var component = ComponentRawValues[ i ];
+                var rawComponentValue = RawComponentValues[ i ];
                 Type sourceType;
 
-                if( component is Bind binding )
+                if( rawComponentValue is Bind binding )
                 {
                     bindingSourceTypes.MoveNext();
 
@@ -506,27 +540,27 @@ namespace Utilities.WPF.Net.MarkupExtensions
                     return false;
                 }
 
-                if( componentBackValues.Length != ComponentRawValues.Count )
+                if( componentBackValues.Length != RawComponentValues.Count )
                 {
-                    throw new Exception( $"CalculateBackValues returned a wrong number of values (expected {ComponentRawValues.Count}, actual={componentBackValues.Length})" );
+                    throw new Exception( $"CalculateBackValues returned a wrong number of values (expected {RawComponentValues.Count}, actual={componentBackValues.Length})" );
                 }
             }
 
-            for( int i = 0; i < ComponentRawValues.Count; i++ )
+            for( int i = 0; i < RawComponentValues.Count; i++ )
             {
-                var component = ComponentRawValues[ i ];
+                var rawComponentValue = RawComponentValues[ i ];
+                var currentComponentValue = currentComponentValues[ i ];
                 var componentBackValue = componentBackValues?[ i ] ?? targetValue;
 
-                if( component is MultiBindBase customBinding )
+                if( rawComponentValue is MultiBindBase markup )
                 {
-                    var currentComponentValue = (MultiBindValue) currentComponentValues[ i ];
-
-                    if( !customBinding.CalculateBackBindingValues( componentBackValue, targetCulture, bindingSourceTypes, currentComponentValue, bindingValues ) )
+                    if( !markup.CalculateBackBindingValues( componentBackValue, targetCulture, bindingSourceTypes,
+                                                            (MultiBindValue) currentComponentValue, bindingValues ) )
                     {
                         return false;
                     }
                 }
-                else if( component is Bind binding )
+                else if( rawComponentValue is Bind binding )
                 {
                     object? finalBackValue;
 
@@ -538,15 +572,13 @@ namespace Utilities.WPF.Net.MarkupExtensions
                     else
                     {
                         var sourceCulture = currentComponentValues[ i ].Culture;
-                        finalBackValue = ConvertValue( componentBackValue, sourceTypes[ i ], sourceCulture );
+                        finalBackValue = Helper.TryConvertValue( componentBackValue, sourceTypes[ i ], sourceCulture );
                     }
 
                     bindingValues.Add( finalBackValue );
                 }
                 else
                 {
-                    var currentComponentValue = currentComponentValues[ i ];
-
                     if( ( componentBackValue != DependencyProperty.UnsetValue ) &&
                         ( componentBackValue != Binding.DoNothing ) &&
                         !Object.Equals( componentBackValue, currentComponentValue.Value ) )
@@ -559,38 +591,30 @@ namespace Utilities.WPF.Net.MarkupExtensions
             return true;
         }
 
-        private static CultureInfo GetBindingSourceCulture( BindingExpression? bindingExpression )
+        private static CultureInfo? GetBindingSourceCulture( BindingExpression bindingExpression )
         {
             CultureInfo? sourceCulture = null;
 
-            var source = bindingExpression?.ResolvedSource;
-            if( source is FrameworkElement frameworkElement )
+            var sourceObject = bindingExpression.ResolvedSource;
+            if( sourceObject is FrameworkElement frameworkElement )
             {
-                var targetPropertyType = bindingExpression!.TargetProperty.PropertyType;
-                if( targetPropertyType == typeof( string ) )
+                var sourcePropertyName = bindingExpression.ResolvedSourcePropertyName;
+
+                var sourceType = frameworkElement.GetType();
+                var descriptor = DependencyPropertyDescriptor.FromName( bindingExpression.ResolvedSourcePropertyName, sourceType, sourceType );
+
+                if( descriptor != null )
                 {
-                    var sourceLanguage = frameworkElement.Language;
-                    sourceCulture = sourceLanguage?.GetSpecificCulture();
+                    var sourcePropertyType = descriptor.DependencyProperty.PropertyType;
+                    if( sourcePropertyType == typeof( string ) )
+                    {
+                        var sourceLanguage = frameworkElement.Language;
+                        sourceCulture = sourceLanguage?.GetSpecificCulture();
+                    }
                 }
             }
 
-            return sourceCulture ?? CultureInfo.InvariantCulture;
-        }
-
-        private static object? ConvertValue( object? value, Type targetType, CultureInfo culture )
-        {
-            if( ( value != null ) && ( targetType != typeof( object ) ) && !targetType.IsAssignableFrom( value.GetType() ) )
-            {
-                try
-                {
-                    return Convert.ChangeType( value, targetType, culture );
-                }
-                catch
-                {
-                }
-            }
-
-            return value;
+            return sourceCulture;
         }
 
         /// <summary>
@@ -601,7 +625,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         {
             var mode = BindingMode.Default;
 
-            foreach( var component in ComponentRawValues )
+            foreach( var component in RawComponentValues )
             {
                 BindingMode componentMode;
 
@@ -640,7 +664,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         {
             var trigger = UpdateSourceTrigger.Default;
 
-            foreach( var component in ComponentRawValues )
+            foreach( var component in RawComponentValues )
             {
                 UpdateSourceTrigger componentTrigger;
 
@@ -682,7 +706,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //                          PROTECTED PROPERTIES
         //===========================================================================
 
-        protected private Collection<object?> ComponentRawValues { get; } = new();
+        protected private Collection<object?> RawComponentValues { get; } = new();
 
         protected private Collection<Type> ComponentTypes { get; } = new();
     }

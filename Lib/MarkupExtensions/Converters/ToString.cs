@@ -53,7 +53,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected override (object? value, CultureInfo culture) ConvertValue( object? value, CultureInfo culture )
+        protected override (object? value, CultureInfo culture) ConvertValue( object? value, CultureInfo targetCulture, CultureInfo? sourceCulture )
         {
             var values = (object?[]?) value;
 
@@ -65,15 +65,15 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
             if( formatString != null )
             {
-                return (String.Format( culture, $"{{0:{formatString}}}", valueToConvert ), culture);
+                return (String.Format( targetCulture, $"{{0:{formatString}}}", valueToConvert ), targetCulture);
             }
             else
             {
-                return (Convert.ToString( valueToConvert, culture ), culture);
+                return (Convert.ToString( valueToConvert, targetCulture ), targetCulture);
             }
         }
 
-        protected override object? ConvertBackValue( object? targetValue, CultureInfo targetCulture, Type sourceType, CultureInfo sourceCulture )
+        protected override object? ConvertBackValue( object? targetValue, CultureInfo targetCulture, Type sourceType, CultureInfo? sourceCulture )
         {
             if( targetValue == null )
             {

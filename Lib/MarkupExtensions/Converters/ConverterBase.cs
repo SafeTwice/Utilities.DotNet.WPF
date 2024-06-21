@@ -45,11 +45,11 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //                            INTERNAL METHODS
         //===========================================================================
 
-        internal static CultureInfo GetUsedCulture( object? cultureParameter, CultureInfo fallbackCulture )
+        internal static CultureInfo? GetUserDefinedCulture( object? cultureParameter )
         {
             if( cultureParameter == null )
             {
-                return fallbackCulture;
+                return null;
             }
             else if( cultureParameter is CultureInfo cultureParameterCulture )
             {
@@ -93,7 +93,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected sealed override (object? value, CultureInfo culture) CalculateValue( object?[] parameterValues, CultureInfo[] parameterCultures, CultureInfo targetCulture )
+        protected sealed override (object? value, CultureInfo? culture) CalculateValue( object?[] parameterValues, CultureInfo?[] parameterCultures, CultureInfo targetCulture )
         {
             Debug.Assert( parameterValues.Length >= PARAMETER_TYPES.Length );
             Debug.Assert( parameterCultures.Length >= PARAMETER_TYPES.Length );
@@ -110,8 +110,9 @@ namespace Utilities.WPF.Net.MarkupExtensions
                 value = values;
             }
 
-            var usedCulture = GetUsedCulture( parameterValues[ CULTURE_INDEX ], parameterCultures[ VALUE_INDEX ] );
-            return ConvertValue( value, usedCulture );
+            var userDefinedCulture = GetUserDefinedCulture( parameterValues[ CULTURE_INDEX ] );
+
+            return ConvertValue( value, userDefinedCulture ?? targetCulture, userDefinedCulture ?? parameterCultures[ VALUE_INDEX ] );
         }
 
         /// <summary>
@@ -126,7 +127,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <param name="value">Value to convert.</param>
         /// <param name="culture">Culture to use to convert the value.</param>
         /// <returns>Converted value and its associated culture.</returns>
-        protected abstract (object? value, CultureInfo culture) ConvertValue( object? value, CultureInfo culture );
+        protected abstract (object? value, CultureInfo? culture) ConvertValue( object? value, CultureInfo targetCulture, CultureInfo? sourceCulture );
 
         /// <inheritdoc/>
         protected sealed override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, ComponentValue[] currentValues )
@@ -157,7 +158,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <param name="sourceType">Type of the source to convert the value back to.</param>
         /// <param name="sourceCulture">Culture of the source.</param>
         /// <returns>Converted back value.</returns>
-        protected abstract object? ConvertBackValue( object? targetValue, CultureInfo targetCulture, Type sourceType, CultureInfo sourceCulture );
+        protected abstract object? ConvertBackValue( object? targetValue, CultureInfo targetCulture, Type sourceType, CultureInfo? sourceCulture );
 
         /// <summary>
         /// Gets the raw value of the specified additional parameter.
@@ -170,7 +171,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the parameter identifier is out of range.</exception>
         protected new object? GetParameterRawValue( int additionalParameterId )
         {
-            if( ( additionalParameterId < 1 ) || ( additionalParameterId >= ( ComponentRawValues.Count - 1 ) ) )
+            if( ( additionalParameterId < 1 ) || ( additionalParameterId >= ( RawComponentValues.Count - 1 ) ) )
             {
                 throw new ArgumentOutOfRangeException( nameof( additionalParameterId ) );
             }
@@ -189,7 +190,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <exception cref="ArgumentOutOfRangeException">Thrown if the parameter identifier is out of range.</exception>
         protected new void SetParameterRawValue( int additionalParameterId, object? parameterValue )
         {
-            if( ( additionalParameterId < 1 ) || ( additionalParameterId >= ( ComponentRawValues.Count - 1 ) ) )
+            if( ( additionalParameterId < 1 ) || ( additionalParameterId >= ( RawComponentValues.Count - 1 ) ) )
             {
                 throw new ArgumentOutOfRangeException( nameof( additionalParameterId ) );
             }

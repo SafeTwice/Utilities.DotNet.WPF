@@ -29,7 +29,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// Collection of components that will be combined by the multi-binding.
         /// </summary>
         [DesignerSerializationVisibility( DesignerSerializationVisibility.Content )]
-        public Collection<object?> Components => base.ComponentRawValues;
+        public Collection<object?> Components => base.RawComponentValues;
 
         /// <inheritdoc cref="BindingBase.BindingGroupName "/>
         [DefaultValue( "" )]
@@ -177,7 +177,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <inheritdoc/>
         void IAddChild.AddChild( object value )
         {
-            base.ComponentRawValues.Add( value );
+            base.RawComponentValues.Add( value );
         }
 
         /// <inheritdoc/>
@@ -186,7 +186,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
             var trimmedText = text.Trim();
             if( trimmedText.Length > 0 )
             {
-                base.ComponentRawValues.Add( trimmedText );
+                base.RawComponentValues.Add( trimmedText );
             }
         }
 
@@ -195,8 +195,8 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected override (object? value, CultureInfo culture) CalculateValue( object?[] componentValues, CultureInfo[] componentCultures,
-                                                                                Type targetType, CultureInfo targetCulture )
+        protected override (object? value, CultureInfo? culture) CalculateValue( object?[] componentValues, CultureInfo?[] componentCultures,
+                                                                                 Type targetType, CultureInfo targetCulture )
         {
             object? value = null;
             var culture = targetCulture;
@@ -219,7 +219,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
                 else
                 {
                     value = Binding.DoNothing;
-                    culture = CultureInfo.InvariantCulture;
+                    culture = null;
                 }
             }
 

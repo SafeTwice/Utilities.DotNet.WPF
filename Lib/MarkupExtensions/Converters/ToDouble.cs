@@ -40,19 +40,19 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected override (object? value, CultureInfo culture) ConvertValue( object? value, CultureInfo culture )
+        protected override (object? value, CultureInfo? culture) ConvertValue( object? value, CultureInfo targetCulture, CultureInfo? sourceCulture )
         {
             try
             {
-                return (Convert.ToDouble( value, culture ), CultureInfo.InvariantCulture);
+                return (Convert.ToDouble( value, sourceCulture ), null);
             }
             catch
             {
-                return (Binding.DoNothing, CultureInfo.InvariantCulture);
+                return (Binding.DoNothing, null);
             }
         }
 
-        protected override object? ConvertBackValue( object? targetValue, CultureInfo targetCulture, Type sourceType, CultureInfo sourceCulture )
+        protected override object? ConvertBackValue( object? targetValue, CultureInfo targetCulture, Type sourceType, CultureInfo? sourceCulture )
         {
             if( targetValue == null )
             {
