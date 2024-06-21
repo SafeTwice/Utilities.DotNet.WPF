@@ -57,6 +57,8 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <inheritdoc/>
         protected sealed override (object? value, CultureInfo? culture) CalculateValue( object?[] parameterValues, CultureInfo?[] parameterCultures, CultureInfo targetCulture )
         {
+            Debug.Assert( parameterValues.Length == NUM_OPERANDS );
+
             var a = (TA?) parameterValues[ A_INDEX ];
             var b = (TB?) parameterValues[ B_INDEX ];
 

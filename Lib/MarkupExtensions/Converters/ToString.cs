@@ -25,8 +25,8 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// </summary>
         public object? FormatString
         {
-            get => GetParameterRawValue( FORMATSTRING_INDEX );
-            set => SetParameterRawValue( FORMATSTRING_INDEX, value );
+            get => GetParameterRawValue( FORMAT_STRING_INDEX );
+            set => SetParameterRawValue( FORMAT_STRING_INDEX, value );
         }
 
         //===========================================================================
@@ -61,7 +61,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
             Debug.Assert( values!.Length == ( ADDITIONAL_PARAMETERS_TYPES.Length + 1 ) );
 
             var valueToConvert = values[ VALUE_INDEX ];
-            var formatString = values[ FORMATSTRING_INDEX ] as string;
+            var formatString = values[ FORMAT_STRING_INDEX ] as string;
 
             if( formatString != null )
             {
@@ -73,6 +73,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
             }
         }
 
+        /// <inheritdoc/>
         protected override object? ConvertBackValue( object? targetValue, CultureInfo targetCulture, Type sourceType, CultureInfo? sourceCulture )
         {
             if( targetValue == null )
@@ -100,7 +101,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //===========================================================================
 
         private const int VALUE_INDEX = 0;
-        private const int FORMATSTRING_INDEX = 1;
+        private const int FORMAT_STRING_INDEX = 1;
 
         private static readonly Type[] ADDITIONAL_PARAMETERS_TYPES = new Type[]
         {

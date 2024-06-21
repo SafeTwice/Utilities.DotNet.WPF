@@ -223,7 +223,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
 
         private static readonly Type[] PARAMETER_TYPES =
         {
-            typeof( CultureInfo ), // Culture
+            typeof( object ), // Culture
             typeof( string ), // Format string
             typeof( object ), // Param 0
             typeof( object ), // Param 1

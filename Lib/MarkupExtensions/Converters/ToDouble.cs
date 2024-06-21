@@ -52,6 +52,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
             }
         }
 
+        /// <inheritdoc/>
         protected override object? ConvertBackValue( object? targetValue, CultureInfo targetCulture, Type sourceType, CultureInfo? sourceCulture )
         {
             if( targetValue == null )

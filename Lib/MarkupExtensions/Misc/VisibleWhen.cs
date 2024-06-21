@@ -14,8 +14,13 @@ namespace Utilities.WPF.Net.MarkupExtensions
     /// <summary>
     /// Markup extension that returns a <see cref="Visibility"/> value based on a condition.
     /// </summary>
+    /// <remarks>
+    /// <para>When <see cref="Condition"/> is <c>true</c>, the value returned is <see cref="Visibility.Visible"/>.</para>
+    /// <para>Otherwise, the value returned is <see cref="Visibility.Hidden"/> if <see cref="HiddenWhenInvisible"/> is <c>true;</c>
+    /// or <see cref="Visibility.Collapsed"/> otherwise.</para>
+    /// </remarks>
     [MarkupExtensionReturnType( typeof( Visibility ) )]
-    public class VisibleWhen : BindingMarkupExtensionBase
+    public sealed class VisibleWhen : BindingMarkupExtensionBase
     {
         //===========================================================================
         //                           PUBLIC PROPERTIES
@@ -24,6 +29,7 @@ namespace Utilities.WPF.Net.MarkupExtensions
         /// <summary>
         /// Condition to calculate the visibility.
         /// </summary>
+        [ConstructorArgument( "condition" )]
         public object? Condition
         {
             get => GetParameterRawValue( CONDITION_INDEX );
@@ -31,9 +37,9 @@ namespace Utilities.WPF.Net.MarkupExtensions
         }
 
         /// <summary>
-        /// Indicates whether the element should be hidden when the <see cref="Condition"> is <c>false</c>.
-        /// Otherwise, the element will be collapsed.
+        /// Selects the visibility value when the condition is <c>false</c>.
         /// </summary>
+        [ConstructorArgument( "hiddenWhenInvisible" )]
         public object? HiddenWhenInvisible
         {
             get => GetParameterRawValue( HIDE_WHEN_INVISIBLE_INDEX );
@@ -44,15 +50,27 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //                          PUBLIC CONSTRUCTORS
         //===========================================================================
 
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
         public VisibleWhen() : base( new Type[] { typeof( bool ), typeof( bool ) } )
         {
         }
 
+        /// <summary>
+        /// Constructor that initializes the condition.
+        /// </summary>
+        /// <param name="condition">Condition to calculate the visibility.</param>
         public VisibleWhen( object? condition ) : this()
         {
             Condition = condition;
         }
 
+        /// <summary>
+        /// Constructor that initializes the condition and selects the value to return when the condition is <c>false</c>.
+        /// </summary>
+        /// <param name="condition">Condition to calculate the visibility.</param>
+        /// <param name="hiddenWhenInvisible">Selects the visibility value when the condition is <c>false</c>.</param>
         public VisibleWhen( object? condition, object? hiddenWhenInvisible ) : this( condition )
         {
             HiddenWhenInvisible = hiddenWhenInvisible;
@@ -62,33 +80,32 @@ namespace Utilities.WPF.Net.MarkupExtensions
         //                            PROTECTED METHODS
         //===========================================================================
 
+        /// <inheritdoc/>
         protected override (object? value, CultureInfo? culture) CalculateValue( object?[] parameterValues, CultureInfo?[] parameterCultures, CultureInfo targetCulture )
         {
             Debug.Assert( parameterValues.Length == NUM_OPERANDS );
 
-            var value = (bool?) parameterValues[ CONDITION_INDEX ];
+            var visible = (bool?) parameterValues[ CONDITION_INDEX ];
             var hideWhenInvisible = ( (bool?) parameterValues[ HIDE_WHEN_INVISIBLE_INDEX ] ) ?? false;
 
             object? returnedValue;
 
-            if( value == null )
+            if( visible == null )
             {
                 returnedValue = DependencyProperty.UnsetValue;
             }
             else
             {
-                returnedValue = value.Value ? Visibility.Visible :
+                returnedValue = visible.Value ? Visibility.Visible :
                                 hideWhenInvisible ? Visibility.Hidden : Visibility.Collapsed;
             }
 
             return (returnedValue, null);
         }
 
-        protected sealed override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, ComponentValue[] currentValues )
+        /// <inheritdoc/>
+        protected override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, ComponentValue[] currentValues )
         {
-            Debug.Assert( sourceTypes.Length == NUM_OPERANDS );
-            Debug.Assert( currentValues.Length == NUM_OPERANDS );
-
             if( targetValue is Visibility visibility )
             {
                 return new object?[ NUM_OPERANDS ]
