@@ -11,12 +11,12 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
     /// Markup extension that returns a <see cref="Visibility"/> value based on a condition.
     /// </summary>
     /// <remarks>
-    /// <para>When <see cref="Condition"/> is <c>true</c>, the value returned is <see cref="Visibility.Visible"/>.</para>
+    /// <para>When <see cref="Condition"/> is <c>false</c>, the value returned is <see cref="Visibility.Visible"/>.</para>
     /// <para>Otherwise, the value returned is <see cref="Visibility.Hidden"/> if <see cref="HiddenWhenInvisible"/> is <c>true;</c>
     /// or <see cref="Visibility.Collapsed"/> otherwise.</para>
     /// </remarks>
     [MarkupExtensionReturnType( typeof( Visibility ) )]
-    public sealed class VisibleWhen : VisibleWhenBase
+    public sealed class InvisibleWhen : VisibleWhenBase
     {
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
@@ -25,7 +25,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public VisibleWhen() : base( false )
+        public InvisibleWhen() : base( true )
         {
         }
 
@@ -33,7 +33,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// Constructor that initializes the condition.
         /// </summary>
         /// <param name="condition">Condition to calculate the visibility.</param>
-        public VisibleWhen( object? condition ) : this()
+        public InvisibleWhen( object? condition ) : this()
         {
             Condition = condition;
         }
@@ -43,7 +43,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// </summary>
         /// <param name="condition">Condition to calculate the visibility.</param>
         /// <param name="hiddenWhenInvisible">Selects the visibility value when the condition is <c>false</c>.</param>
-        public VisibleWhen( object? condition, object? hiddenWhenInvisible ) : this( condition )
+        public InvisibleWhen( object? condition, object? hiddenWhenInvisible ) : this( condition )
         {
             HiddenWhenInvisible = hiddenWhenInvisible;
         }
