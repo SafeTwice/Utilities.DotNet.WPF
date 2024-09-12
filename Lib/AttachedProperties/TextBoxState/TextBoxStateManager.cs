@@ -6,6 +6,8 @@ using System.Windows.Controls;
 using System.Windows;
 using System.Diagnostics;
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace Utilities.DotNet.WPF.AttachedProperties
 {
@@ -46,7 +48,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
     /// <summary>
     /// Defines an attached property to manage and observe the state of a <see cref="TextBox"/>.
     /// </summary>
-    public class TextBoxStateManager
+    public class TextBoxStateManager : INotifyPropertyChanged
     {
         //===========================================================================
         //                           PUBLIC PROPERTIES
@@ -92,6 +94,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 }
 
                 m_stateInfo.Text = value;
+
+                OnPropertyChanged();
             }
         }
 
@@ -108,6 +112,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 }
 
                 m_stateInfo.CaretIndex = value;
+
+                OnPropertyChanged();
             }
         }
 
@@ -124,6 +130,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 }
 
                 m_stateInfo.SelectionStart = value;
+
+                OnPropertyChanged();
             }
         }
 
@@ -140,6 +148,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 }
 
                 m_stateInfo.SelectionLength = value;
+
+                OnPropertyChanged();
             }
         }
 
@@ -148,11 +158,17 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //===========================================================================
 
         /// <summary>
-        /// Event raised when the state of the <see cref="TextBox"/> changes.
+        /// Event raised when the text of the <see cref="TextBox"/> changes.
         /// </summary>
         public event TextBoxStateChangedEventHandler? TextChanged;
 
+        /// <summary>
+        /// Event raised when the selection of the <see cref="TextBox"/> changes.
+        /// </summary>
         public event TextBoxStateChangedEventHandler? SelectionChanged;
+
+        /// <inheritdoc/>
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
@@ -208,6 +224,11 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
                 m_textBox = textBox; // Re-enabled triggering of events
             }
+
+            OnPropertyChanged( nameof( Text ) );
+            OnPropertyChanged( nameof( CaretIndex ) );
+            OnPropertyChanged( nameof( SelectionStart ) );
+            OnPropertyChanged( nameof( SelectionLength ) );
         }
 
         //===========================================================================
@@ -290,12 +311,23 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 if( textChange )
                 {
                     TextChanged?.Invoke( this, eventArgs );
+
+                    OnPropertyChanged( nameof( Text ) );
                 }
                 else
                 {
                     SelectionChanged?.Invoke( this, eventArgs );
+
+                    OnPropertyChanged( nameof( CaretIndex ) );
+                    OnPropertyChanged( nameof( SelectionStart ) );
+                    OnPropertyChanged( nameof( SelectionLength ) );
                 }
             }
+        }
+
+        private void OnPropertyChanged( [CallerMemberName] string propertyName = "" )
+        {
+            PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
         }
 
         //===========================================================================
