@@ -3,6 +3,7 @@
 /// @license    See LICENSE.txt
 
 using System;
+using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
 using Utilities.DotNet.WPF.DataTemplates;
@@ -14,10 +15,11 @@ namespace Utilities.DotNet.WPF.MVVM
     /// different items.
     /// </summary>
     /// <remarks>
-    /// Classes derived from this class will create a new data template each time that <see cref="SelectTemplate">SelectTemplate()</see> is called.
-    /// This is only necessary if the data templates will be modified at runtime, otherwise it is recommended to use <see cref="MvvmDataTemplateSelector"/>.
+    /// Classes derived from this class will cache the data templates created for each combination of view type and item type.
+    /// Therefore, data templates returned by <see cref="SelectTemplate">SelectTemplate()</see> shall not be modified. If you
+    /// need to modify the data templates at runtime, use <see cref="MvvmDataTemplateCreator"/> instead.
     /// </remarks>
-    public abstract class MvvmDataTemplateCreator : DataTemplateSelector
+    public abstract class MvvmDataTemplateSelector : DataTemplateSelector
     {
         //===========================================================================
         //                            PUBLIC METHODS
@@ -34,7 +36,16 @@ namespace Utilities.DotNet.WPF.MVVM
             }
             else
             {
-                return DataTemplateHelper.CreateDataTemplate( viewType, item.GetType() );
+                var itemType = item.GetType();
+
+                if( !m_dataTemplates.TryGetValue( (viewType, itemType), out var dataTemplate ) )
+                {
+                    dataTemplate = DataTemplateHelper.CreateDataTemplate( viewType, itemType );
+
+                    m_dataTemplates[ (viewType, itemType) ] = dataTemplate;
+                }
+
+                return dataTemplate;
             }
         }
 
@@ -51,5 +62,11 @@ namespace Utilities.DotNet.WPF.MVVM
         /// <param name="item">Item to get the view for.</param>
         /// <returns><see cref="Type"/> of the view to display the item, or <c>null</c> if not available.</returns>
         protected abstract Type? GetViewTypeForItem( object item );
+
+        //===========================================================================
+        //                           PRIVATE ATTRIBUTES
+        //===========================================================================
+
+        private readonly Dictionary<(Type, Type), DataTemplate> m_dataTemplates = new();
     }
 }
