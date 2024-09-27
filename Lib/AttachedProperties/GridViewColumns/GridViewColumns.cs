@@ -76,16 +76,19 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 return;
             }
 
-            GetObserver( obj )?.Dispose();
+            var oldObserver = GetObserver( obj );
+
+            oldObserver?.Detach();
+            oldObserver?.Dispose();
 
             if( e.NewValue != null )
             {
                 ICollectionView collectionView = CollectionViewSource.GetDefaultView( e.NewValue );
                 if( collectionView != null )
                 {
-                    var newController = new GridViewColumnsObserver( gridView, collectionView );
+                    var newObserver = new GridViewColumnsObserver( gridView, collectionView );
 
-                    SetObserver( obj, newController );
+                    SetObserver( obj, newObserver );
                 }
             }
         }

@@ -27,7 +27,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
             m_collectionView.CollectionChanged += ColumnsSource_CollectionChanged;
 
-            CreateColumns();
+            LoadColumns();
         }
 
         //===========================================================================
@@ -49,10 +49,19 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         }
 
         //===========================================================================
+        //                            INTERNAL METHODS
+        //===========================================================================
+
+        internal void Detach()
+        {
+            m_gridView.Columns.Clear();
+        }
+
+        //===========================================================================
         //                            PRIVATE METHODS
         //===========================================================================
 
-        private void CreateColumns()
+        private void LoadColumns()
         {
             m_gridView.Columns.Clear();
 
@@ -65,6 +74,11 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         private static GridViewColumn CreateColumn( object? columnSourceItem )
         {
+            if( columnSourceItem is GridViewColumn gridViewColumn )
+            {
+                return gridViewColumn;
+            }
+
             var sourceItem = columnSourceItem as IGridViewColumnsSourceItem;
 
             GridViewColumn column = new GridViewColumn();
@@ -167,7 +181,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                     break;
 
                 case NotifyCollectionChangedAction.Reset:
-                    CreateColumns();
+                    LoadColumns();
                     break;
 
                 default:
