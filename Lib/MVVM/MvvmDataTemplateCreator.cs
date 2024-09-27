@@ -5,6 +5,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using Utilities.DotNet.WPF.DataTemplates;
 
 namespace Utilities.DotNet.WPF.MVVM
 {
@@ -18,6 +19,7 @@ namespace Utilities.DotNet.WPF.MVVM
         //                            PUBLIC METHODS
         //===========================================================================
 
+        /// <inheritdoc/>
         public override DataTemplate? SelectTemplate( object item, DependencyObject container )
         {
             var viewType = GetViewTypeForItem( item );
@@ -28,13 +30,7 @@ namespace Utilities.DotNet.WPF.MVVM
             }
             else
             {
-                var dataTemplate = new DataTemplate();
-                dataTemplate.DataType = item.GetType();
-
-                var elementFactory = new FrameworkElementFactory( viewType );
-                dataTemplate.VisualTree = elementFactory;
-
-                return dataTemplate;
+                return DataTemplateHelper.CreateDataTemplate( viewType, item.GetType() );
             }
         }
 
@@ -45,6 +41,9 @@ namespace Utilities.DotNet.WPF.MVVM
         /// <summary>
         /// Obtains the type of the view for an item.
         /// </summary>
+        /// <remarks>
+        /// Must be overridden by derived classes to provide the type of the view for an item.
+        /// </remarks>
         /// <param name="item">Item to get the view for</param>
         /// <returns><see cref="Type"/> of the view to display the item, or <c>null</c> if not available</returns>
         protected abstract Type? GetViewTypeForItem( object item );
