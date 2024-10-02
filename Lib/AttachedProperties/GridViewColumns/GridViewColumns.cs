@@ -10,6 +10,14 @@ using System.Windows.Data;
 namespace Utilities.DotNet.WPF.AttachedProperties
 {
     /// <summary>
+    /// Selector for the data context of a cell in a <see cref="GridView"/>.
+    /// </summary>
+    /// <param name="item">Item to select the data context from.</param>
+    /// <param name="columnInfo">Column for which to select the data context.</param>
+    /// <returns>The data context for the cell.</returns>
+    public delegate object? GridViewCellDataContextSelector( object item, IGridViewColumnInfo columnInfo );
+
+    /// <summary>
     /// Provides attached properties to generate columns for a <see cref="GridView"/>.
     /// </summary>
     public static class GridViewColumns
@@ -23,7 +31,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// </summary>
         public static readonly DependencyProperty ColumnsSourceProperty =
             DependencyProperty.RegisterAttached( "ColumnsSource", typeof( object ), typeof( GridViewColumns ),
-                new PropertyMetadata( null, ColumnsSourceChanged ) );
+                new PropertyMetadata( null, OnColumnsSourceChangedEvent ) );
 
         /// <summary>
         /// Gets the collection that generates the columns for a <see cref="GridView"/>.
@@ -40,10 +48,66 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// Sets the collection that generates the columns for a <see cref="GridView"/>.
         /// </summary>
         /// <param name="obj">The dependency object to set the value to.</param>
-        /// <param name="value">Collection of <see cref="IGridViewColumnsSourceItem"/>.</param>
+        /// <param name="value">Collection of <see cref="IGridViewColumnInfo"/>.</param>
         public static void SetColumnsSource( DependencyObject obj, object value )
         {
             obj.SetValue( ColumnsSourceProperty, value );
+        }
+
+        /// <summary>
+        /// Dependency property for the selector of the data context of a cell in a <see cref="GridView"/>.
+        /// </summary>
+        public static readonly DependencyProperty CellDataContextSelectorProperty =
+            DependencyProperty.RegisterAttached( "CellDataContextSelector", typeof( GridViewCellDataContextSelector ), typeof( GridViewColumns ),
+                new PropertyMetadata( null, OnChangeThatNeedsColumnReloadEvent ) );
+
+        /// <summary>
+        /// Gets the selector for the data context of a cell in a <see cref="GridView"/>.
+        /// </summary>
+        /// <param name="obj">The dependency object to get the value from.</param>
+        /// <returns>The selector for the data context of a cell.</returns>
+        [AttachedPropertyBrowsableForType( typeof( GridView ) )]
+        public static GridViewCellDataContextSelector? GetCellDataContextSelector( DependencyObject obj )
+        {
+            return (GridViewCellDataContextSelector) obj.GetValue( CellDataContextSelectorProperty );
+        }
+
+        /// <summary>
+        /// Sets the selector for the data context of a cell in a <see cref="GridView"/>.
+        /// </summary>
+        /// <param name="obj">The dependency object to set the value to.</param>
+        /// <param name="value">The selector for the data context of a cell.</param>
+        public static void SetCellDataContextSelector( DependencyObject obj, GridViewCellDataContextSelector? value )
+        {
+            obj.SetValue( CellDataContextSelectorProperty, value );
+        }
+
+        /// <summary>
+        /// Dependency property for the data template selector for the cells in a <see cref="GridView"/>.
+        /// </summary>
+        public static readonly DependencyProperty CellTemplateSelectorProperty =
+            DependencyProperty.RegisterAttached( "CellTemplateSelector", typeof( DataTemplateSelector ), typeof( GridViewColumns ),
+                new PropertyMetadata( null, OnChangeThatNeedsColumnReloadEvent ) );
+
+        /// <summary>
+        /// Gets the data template selector for the cells in a <see cref="GridView"/>.
+        /// </summary>
+        /// <param name="obj">The dependency object to get the value from.</param>
+        /// <returns>The data template selector for the cells.</returns>
+        [AttachedPropertyBrowsableForType( typeof( GridView ) )]
+        public static DataTemplateSelector? GetCellTemplateSelector( DependencyObject obj )
+        {
+            return (DataTemplateSelector) obj.GetValue( CellTemplateSelectorProperty );
+        }
+
+        /// <summary>
+        /// Sets the data template selector for the cells in a <see cref="GridView"/>.
+        /// </summary>
+        /// <param name="obj">The dependency object to set the value to.</param>
+        /// <param name="value">The data template selector for the cells.</param>
+        public static void SetCellTemplateSelector( DependencyObject obj, DataTemplateSelector? value )
+        {
+            obj.SetValue( CellTemplateSelectorProperty, value );
         }
 
         //===========================================================================
@@ -68,7 +132,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //                            PRIVATE METHODS
         //===========================================================================
 
-        private static void ColumnsSourceChanged( DependencyObject obj, DependencyPropertyChangedEventArgs e )
+        private static void OnColumnsSourceChangedEvent( DependencyObject obj, DependencyPropertyChangedEventArgs e )
         {
             var gridView = obj as GridView;
             if( gridView == null )
@@ -76,19 +140,35 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 return;
             }
 
-            var oldObserver = GetObserver( obj );
+            ReloadColumns( gridView, e.NewValue );
+        }
+        private static void OnChangeThatNeedsColumnReloadEvent( DependencyObject obj, DependencyPropertyChangedEventArgs e )
+        {
+            var gridView = obj as GridView;
+            if( gridView == null )
+            {
+                return;
+            }
+
+            var columnsSource = GetColumnsSource( gridView );
+            ReloadColumns( gridView, columnsSource );
+        }
+
+        private static void ReloadColumns( GridView gridView, object? columnsSource )
+        {
+            var oldObserver = GetObserver( gridView );
 
             oldObserver?.Detach();
             oldObserver?.Dispose();
 
-            if( e.NewValue != null )
+            if( columnsSource != null )
             {
-                ICollectionView collectionView = CollectionViewSource.GetDefaultView( e.NewValue );
+                ICollectionView collectionView = CollectionViewSource.GetDefaultView( columnsSource );
                 if( collectionView != null )
                 {
                     var newObserver = new GridViewColumnsObserver( gridView, collectionView );
 
-                    SetObserver( obj, newObserver );
+                    SetObserver( gridView, newObserver );
                 }
             }
         }

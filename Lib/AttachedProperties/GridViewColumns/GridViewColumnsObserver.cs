@@ -65,69 +65,48 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         {
             m_gridView.Columns.Clear();
 
+            var cellTemplateSelector = GridViewColumns.GetCellTemplateSelector( m_gridView );
+
+            var cellDataContextSelector = GridViewColumns.GetCellDataContextSelector( m_gridView );
+
             foreach( var item in m_collectionView )
             {
-                GridViewColumn column = CreateColumn( item );
+                GridViewColumn column = CreateColumn( item, cellTemplateSelector, cellDataContextSelector );
                 m_gridView.Columns.Add( column );
             }
         }
 
-        private static GridViewColumn CreateColumn( object? columnSourceItem )
+        private GridViewColumn CreateColumn( object? columnSourceItem, DataTemplateSelector? cellTemplateSelector, GridViewCellDataContextSelector? cellDataContextSelector )
         {
-            if( columnSourceItem is GridViewColumn gridViewColumn )
-            {
-                return gridViewColumn;
-            }
-
-            var sourceItem = columnSourceItem as IGridViewColumnsSourceItem;
+            var columnInfo = columnSourceItem as IGridViewColumnInfo;
 
             GridViewColumn column = new GridViewColumn();
 
-            if( sourceItem != null )
+            if( columnInfo != null )
             {
-                if( sourceItem.DisplayMemberBinding != null )
+                column.Header = columnInfo.Name;
+
+                if( cellTemplateSelector != null )
                 {
-                    column.DisplayMemberBinding = sourceItem.DisplayMemberBinding;
+                    Func<object, object?> columnDataContextSelector;
+                    
+                    if( cellDataContextSelector == null )
+                    {
+                        columnDataContextSelector = (item) => item;
+                    }
+                    else
+                    {
+                        columnDataContextSelector = ( item ) => cellDataContextSelector( item, columnInfo );
+                    }
+
+                    var columnTemplateSelector = new GridViewColumnTemplateSelector( columnDataContextSelector, cellTemplateSelector );
+
+                    column.CellTemplateSelector = columnTemplateSelector;
                 }
 
-                if( sourceItem.CellTemplate != null )
+                if( columnInfo.Width != null )
                 {
-                    column.CellTemplate = sourceItem.CellTemplate;
-                }
-
-                if( sourceItem.CellTemplateSelector != null )
-                {
-                    column.CellTemplateSelector = sourceItem.CellTemplateSelector;
-                }
-
-                if( sourceItem.Header != null )
-                {
-                    column.Header = sourceItem.Header;
-                }
-
-                if( !string.IsNullOrEmpty( sourceItem.HeaderStringFormat ) )
-                {
-                    column.HeaderStringFormat = sourceItem.HeaderStringFormat;
-                }
-
-                if( sourceItem.HeaderContainerStyle != null )
-                {
-                    column.HeaderContainerStyle = sourceItem.HeaderContainerStyle;
-                }
-
-                if( sourceItem.HeaderTemplate != null )
-                {
-                    column.HeaderTemplate = sourceItem.HeaderTemplate;
-                }
-
-                if( sourceItem.HeaderTemplateSelector != null )
-                {
-                    column.HeaderTemplateSelector = sourceItem.HeaderTemplateSelector;
-                }
-
-                if( sourceItem.Width != null )
-                {
-                    column.Width = sourceItem.Width.Value;
+                    column.Width = columnInfo.Width.Value;
                 }
             }
             else
@@ -145,9 +124,13 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 return;
             }
 
+            var cellTemplateSelector = GridViewColumns.GetCellTemplateSelector( m_gridView );
+
+            var cellDataContextSelector = GridViewColumns.GetCellDataContextSelector( m_gridView );
+
             for( int i = 0; i < newColumns.Count; i++ )
             {
-                GridViewColumn column = CreateColumn( newColumns[ i ] );
+                GridViewColumn column = CreateColumn( newColumns[ i ], cellTemplateSelector, cellDataContextSelector );
                 m_gridView.Columns.Insert( insertionIndex + i, column );
             }
         }
