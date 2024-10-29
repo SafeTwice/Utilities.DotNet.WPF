@@ -4,12 +4,12 @@
 
 using System;
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Data;
-using Utilities.DotNet.Collections;
 
 namespace Utilities.DotNet.WPF.AttachedProperties
 {
@@ -83,11 +83,24 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         private GridViewColumn CreateColumn( object? columnSourceItem, DataTemplateSelector? cellTemplateSelector, GridViewCellDataContextSelector? cellDataContextSelector )
         {
-            GridViewColumn column = new GridViewColumn();
+            GridViewColumn column = new();
 
             if( columnSourceItem is IGridViewColumnInfo columnInfo )
             {
-                column.Header = columnInfo.Name;
+
+                ContextMenu contextMenu = new();
+                MenuItem menuItem = new() { Header = $"Hide {columnInfo.Name} " };
+                contextMenu.Items.Add( menuItem );
+                menuItem.Click += ( sender, e ) =>
+                {
+                    columnInfo.IsVisible = false;
+                };
+                var header = new GridViewColumnHeader
+                {
+                    ContextMenu = contextMenu,
+                    Content = columnInfo.Name
+                };
+                column.Header = header;
 
                 if( cellTemplateSelector != null )
                 {
@@ -208,8 +221,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         {
             if( e.Action == NotifyCollectionChangedAction.Move )
             {
-                var sourceCollection = m_collectionView.SourceCollection as IListEx<GridViewColumnInfo>;
-
+                var sourceCollection = m_collectionView.SourceCollection as ObservableCollection<GridViewColumnInfo>;
                 if( sourceCollection == null )
                 {
                     return;
