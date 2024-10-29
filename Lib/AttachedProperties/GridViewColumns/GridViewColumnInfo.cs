@@ -19,11 +19,12 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //                          PUBLIC CONSTRUCTORS
         //===========================================================================
         public GridViewColumnInfo() { }
-        public GridViewColumnInfo( string name, double? width = DEFAULT_WIDTH, bool isVisible = true )
+        public GridViewColumnInfo( string? name, double? width = DEFAULT_WIDTH, bool isVisible = true )
         {
-            Name = name;
-            Width = width;
-            IsVisible = isVisible;
+            m_name = name;
+            m_width = width;
+            m_isVisible = isVisible;
+
         }
 
         //===========================================================================
@@ -31,15 +32,28 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //===========================================================================
 
         /// <inheritdoc/>
-        public string Name { get; set; } = string.Empty;
+        public string? Name { get => m_name; set => SetProperty( ref m_name, value ); }
+        private string? m_name;
 
         /// <inheritdoc/>
-        public double? Width { get; set; }
+        public double? Width { get => m_width; set => SetProperty( ref m_width, value ); }
+        private double? m_width;
         /// <inheritdoc/>
-        public double? ActualWidth { get; set; }
+        public double? ActualWidth { get => m_actualWidth; set => SetProperty( ref m_actualWidth, value ); }
+        private double? m_actualWidth;
 
         /// <inheritdoc/>
-        public bool IsVisible { get; set; } = true;
+        public bool IsVisible { get => m_isVisible; set => SetProperty( ref m_isVisible, value ); }
+        private bool m_isVisible;
+
+        public void SetProperty<T>( ref T field, T value, [CallerMemberName] string propertyName = "" )
+        {
+            if( !Equals( field, value ) )
+            {
+                field = value;
+                OnPropertyChanged( propertyName );
+            }
+        }
 
         //===========================================================================
         //                             PUBLIC EVENTS
