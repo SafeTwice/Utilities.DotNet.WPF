@@ -18,8 +18,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
         //===========================================================================
-        public GridViewColumnInfo() { }
-        public GridViewColumnInfo( string? name, double? width = DEFAULT_WIDTH, bool isVisible = true )
+        public GridViewColumnInfo() :this(string.Empty) { }
+        public GridViewColumnInfo( string name, double? width = DEFAULT_WIDTH, bool isVisible = true )
         {
             m_name = name;
             m_width = width;
@@ -32,8 +32,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //===========================================================================
 
         /// <inheritdoc/>
-        public string? Name { get => m_name; set => SetProperty( ref m_name, value ); }
-        private string? m_name;
+        public string Name { get => m_name; set => SetProperty( ref m_name, value ); }
+        private string m_name;
 
         /// <inheritdoc/>
         public double? Width { get => m_width; set => SetProperty( ref m_width, value ); }
@@ -46,15 +46,6 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         public bool IsVisible { get => m_isVisible; set => SetProperty( ref m_isVisible, value ); }
         private bool m_isVisible;
 
-        public void SetProperty<T>( ref T field, T value, [CallerMemberName] string propertyName = "" )
-        {
-            if( !Equals( field, value ) )
-            {
-                field = value;
-                OnPropertyChanged( propertyName );
-            }
-        }
-
         //===========================================================================
         //                             PUBLIC EVENTS
         //===========================================================================
@@ -65,6 +56,15 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //                            PROTECTED METHODS
         //===========================================================================
 
+
+        protected void SetProperty<T>( ref T field, T value, [CallerMemberName] string propertyName = "" )
+        {
+            if( !Equals( field, value ) )
+            {
+                field = value;
+                OnPropertyChanged( propertyName );
+            }
+        }
         protected void OnPropertyChanged( [CallerMemberName] string propertyName = "" )
         {
             PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
