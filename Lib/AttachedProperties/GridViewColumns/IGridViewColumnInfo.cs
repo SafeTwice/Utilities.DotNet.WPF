@@ -18,7 +18,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <summary>
         /// Name of the column.
         /// </summary>
-        string? Name { get; set; }
+        string Name { get; set; }
 
         /// <summary>
         /// Width of the column.
