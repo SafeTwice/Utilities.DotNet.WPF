@@ -87,21 +87,9 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
             if( columnSourceItem is IGridViewColumnInfo columnInfo )
             {
-
-                ContextMenu contextMenu = new();
-                MenuItem menuItem = new() { Header = $"Hide {columnInfo.Name} " };
-                contextMenu.Items.Add( menuItem );
-                menuItem.Click += ( sender, e ) =>
-                {
-                    columnInfo.IsVisible = false;
-                };
-                var header = new GridViewColumnHeader
-                {
-                    ContextMenu = contextMenu,
-                    Content = columnInfo.Name
-                };
-                column.Header = header;
-
+                
+                column.Header = columnInfo;
+               
                 if( cellTemplateSelector != null )
                 {
                     Func<object, object?> columnDataContextSelector;
