@@ -19,7 +19,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public IsNull()
+        public IsNull() : base( true )
         {
         }
 
@@ -27,7 +27,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// Constructor that initializes the operand.
         /// </summary>
         /// <param name="i">Operand.</param>
-        public IsNull( object i )
+        public IsNull( object i ) : this()
         {
             I = i;
         }

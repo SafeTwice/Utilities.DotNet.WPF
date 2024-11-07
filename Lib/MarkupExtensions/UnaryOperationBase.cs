@@ -34,8 +34,9 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// <summary>
         /// Constructor.
         /// </summary>
-        protected UnaryOperationBase() : base( new Type[] { typeof( TValue ) } )
+        protected UnaryOperationBase( bool isValueNullable ) : base( new Type[] { typeof( TValue ) } )
         {
+            m_isValueNullable = isValueNullable;
         }
 
         //===========================================================================
@@ -51,14 +52,13 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
 
             object? operationValue;
 
-            if( value == null )
+            if( ( value is null ) && !m_isValueNullable )
             {
-                // Unary operation cannot be performed if the operand is null.
                 operationValue = DependencyProperty.UnsetValue;
             }
             else
             {
-                operationValue = CalculateValue( value );
+                operationValue = CalculateValue( value! );
 
                 if( operationValue == null )
                 {
@@ -126,5 +126,11 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
 
         private const int NUM_OPERANDS = 1;
         private const int VALUE_INDEX = 0;
+
+        //===========================================================================
+        //                           PRIVATE ATTRIBUTES
+        //===========================================================================
+
+        private readonly bool m_isValueNullable;
     }
 }

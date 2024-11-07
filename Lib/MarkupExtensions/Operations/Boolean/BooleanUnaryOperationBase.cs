@@ -19,7 +19,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// <summary>
         /// Constructor.
         /// </summary>
-        protected BooleanUnaryOperationBase()
+        protected BooleanUnaryOperationBase() : base( false )
         {
         }
     }
