@@ -19,7 +19,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// <summary>
         /// Constructor.
         /// </summary>
-        protected ComparisonOperationBase()
+        protected ComparisonOperationBase() : base( false, false )
         {
         }
 

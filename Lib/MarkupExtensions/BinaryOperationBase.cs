@@ -46,8 +46,10 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// <summary>
         /// Constructor.
         /// </summary>
-        protected BinaryOperationBase() : base( new Type[] { typeof( TA ), typeof( TB ) } )
+        protected BinaryOperationBase( bool isOperandANullable, bool isOperandBNullable ) : base( new Type[] { typeof( TA ), typeof( TB ) } )
         {
+            m_isOperandANullable = isOperandANullable;
+            m_isOperandBNullable = isOperandBNullable;
         }
 
         //===========================================================================
@@ -64,14 +66,14 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
 
             object? operationValue;
 
-            if( ( a == null ) || ( b == null ) )
+            if( ( ( a is null ) && !m_isOperandANullable ) ||
+                ( ( b is null ) && !m_isOperandBNullable ) )
             {
-                // Binary operation cannot be performed if any of the operands is null.
                 operationValue = DependencyProperty.UnsetValue;
             }
             else
             {
-                operationValue = CalculateValue( a, b );
+                operationValue = CalculateValue( a!, b! );
 
                 if( operationValue == null )
                 {
@@ -151,5 +153,12 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         private const int NUM_OPERANDS = 2;
         private const int A_INDEX = 0;
         private const int B_INDEX = 1;
+
+        //===========================================================================
+        //                           PRIVATE ATTRIBUTES
+        //===========================================================================
+
+        private readonly bool m_isOperandANullable;
+        private readonly bool m_isOperandBNullable;
     }
 }

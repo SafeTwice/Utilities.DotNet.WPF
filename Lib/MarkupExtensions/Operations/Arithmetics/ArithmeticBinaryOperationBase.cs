@@ -19,7 +19,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// <summary>
         /// Constructor.
         /// </summary>
-        protected ArithmeticBinaryOperationBase()
+        protected ArithmeticBinaryOperationBase() : base( false, false )
         {
         }
 
