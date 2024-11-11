@@ -121,11 +121,16 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         protected abstract TValue? CalculateBackValue( TReturn targetValue, ComponentValue operandValue );
 
         //===========================================================================
+        //                           PROTECTED CONSTANTS
+        //===========================================================================
+
+        protected const int VALUE_INDEX = 0;
+
+        //===========================================================================
         //                           PRIVATE CONSTANTS
         //===========================================================================
 
         private const int NUM_OPERANDS = 1;
-        private const int VALUE_INDEX = 0;
 
         //===========================================================================
         //                           PRIVATE ATTRIBUTES

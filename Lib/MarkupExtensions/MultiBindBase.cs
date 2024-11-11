@@ -444,6 +444,8 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
                     var isBindingReversible = ( ( bindingMode == BindingMode.TwoWay ) || ( bindingMode == BindingMode.OneWayToSource ) );
 
                     componentValue = new ComponentValue( bindingValue, bindingCulture, isBindingReversible );
+
+                    OnComponentBindingValueUpdated( i, bindingValue, bindingExpression! );
                 }
                 else
                 {
@@ -485,6 +487,10 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
             // value or it may be converted later by the caller.
 
             return new MultiBindValue( calculatedValue.value, calculatedValue.culture, isReversible, componentValues );
+        }
+
+        protected virtual void OnComponentBindingValueUpdated( int componentIndex, object? newValue, BindingExpression bindingExpression )
+        {
         }
 
         /// <summary>
