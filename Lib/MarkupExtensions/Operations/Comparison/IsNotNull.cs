@@ -7,7 +7,7 @@ using System.Windows.Markup;
 namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
-    /// Base class for boolean binary operations.
+    /// Markup extension that checks if an object is not null.
     /// </summary>
     [MarkupExtensionReturnType( typeof( bool ) )]
     public class IsNotNull : UnaryOperationBase<object?, bool>

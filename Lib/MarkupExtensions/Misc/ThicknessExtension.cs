@@ -11,7 +11,7 @@ using System.Windows.Markup;
 namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
-    /// Markup extension to make <see cref="Thickness"/> bindable.
+    /// Markup extension to make <see cref="Thickness"/> properties bindable.
     /// </summary>
     [MarkupExtensionReturnType( typeof( Thickness ) )]
     public sealed class ThicknessExtension : BindingMarkupExtensionBase

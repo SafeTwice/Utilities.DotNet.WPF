@@ -9,7 +9,7 @@ using System.Windows.Markup;
 namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
-    /// Markup extension that represents a pair of values.
+    /// Markup extension that formats a string.
     /// </summary>
     [MarkupExtensionReturnType( typeof( string ) )]
     public sealed class Format : BindingMarkupExtensionBase
