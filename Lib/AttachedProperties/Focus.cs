@@ -2,6 +2,7 @@
 /// @copyright  Copyright (c) 2020-2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
+using System;
 using System.Windows;
 using System.Windows.Input;
 using Utilities.DotNet.WPF.Common;
@@ -45,6 +46,23 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         }
 
         //===========================================================================
+        //                           PRIVATE PROPERTIES
+        //===========================================================================
+
+        private static readonly DependencyProperty SetFocusDelegateProperty =
+            DependencyProperty.RegisterAttached( "_SetFocusDelegate", typeof( Action ), typeof( Focus ) );
+
+        private static void SetSetFocusDelegate( DependencyObject obj, Action value )
+        {
+            obj.SetValue( SetFocusDelegateProperty, value );
+        }
+
+        private static Action GetSetFocusDelegate( DependencyObject obj )
+        {
+            return (Action) obj.GetValue( SetFocusDelegateProperty );
+        }
+
+        //===========================================================================
         //                            PRIVATE METHODS
         //===========================================================================
 
@@ -52,12 +70,27 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         {
             if( sender is UIElement uiElement )
             {
+                if( e.OldValue is DelegateTrigger oldAction )
+                {
+                    var oldDelegate = GetSetFocusDelegate( uiElement );
+
+                    if( oldDelegate != null )
+                    {
+                        oldAction.Activated -= oldDelegate;
+                    }
+                }
+
                 if( e.NewValue is DelegateTrigger newAction )
                 {
-                    newAction.Activated += () => SetFocus( uiElement );
+                    var newDelegate = () => SetFocus( uiElement );
+
+                    SetSetFocusDelegate( uiElement, newDelegate );
+
+                    newAction.Activated += newDelegate;
                 }
             }
         }
+
         private static void SetFocus( UIElement uiElement )
         {
             uiElement.Dispatcher?.BeginInvoke( () =>
