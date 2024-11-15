@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Markup;
 
 namespace Utilities.DotNet.WPF.MVVM
 {
@@ -14,6 +15,7 @@ namespace Utilities.DotNet.WPF.MVVM
     /// Data template selector that is configured with associations of data templates to object types and then
     /// provides the data templates associated to object types.
     /// </summary>
+    [ContentProperty( nameof( Associations ) )]
     public class MvvmDataTemplateSelectorByType : DataTemplateSelector
     {
         //===========================================================================
@@ -23,7 +25,7 @@ namespace Utilities.DotNet.WPF.MVVM
         /// <value>
         /// Collection of associations of data templates to object types.
         /// </value>
-        public Collection<MvvmDataTemplateForType> Associations { get; } = new Collection<MvvmDataTemplateForType>();
+        public Collection<MvvmDataTemplateForType> Associations { get; } = new();
 
         //===========================================================================
         //                            PUBLIC METHODS
@@ -54,6 +56,7 @@ namespace Utilities.DotNet.WPF.MVVM
     /// <summary>
     /// Association of a data template to an object type.
     /// </summary>
+    [ContentProperty( nameof( Template ) )]
     public class MvvmDataTemplateForType
     {
         //===========================================================================
