@@ -3,6 +3,7 @@
 /// @license    See LICENSE.txt
 
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 
@@ -24,6 +25,11 @@ namespace Utilities.DotNet.WPF.Extensions
         /// <returns>The visual children.</returns>
         public static IEnumerable<DependencyObject> GetVisualChildren( this DependencyObject obj )
         {
+            if( obj is FrameworkElement fe )
+            {
+                fe.ApplyTemplate();
+            }
+
             for( int i = 0; i < VisualTreeHelper.GetChildrenCount( obj ); i++ )
             {
                 DependencyObject child = VisualTreeHelper.GetChild( obj, i );
@@ -39,23 +45,46 @@ namespace Utilities.DotNet.WPF.Extensions
         /// <summary>
         /// Gets the visual children of the specified type of a <see cref="DependencyObject"/>.
         /// </summary>
-        /// <typeparam name="ChildType">Type of the searched children.</typeparam>
+        /// <typeparam name="TChild">Type of the searched visual children.</typeparam>
         /// <param name="obj">A <see cref="DependencyObject"/>.</param>
         /// <returns>The visual children of the specified type.</returns>
-        public static IEnumerable<ChildType> GetVisualChildren<ChildType>( this DependencyObject obj ) where ChildType : DependencyObject
+        public static IEnumerable<TChild> GetVisualChildren<TChild>( this DependencyObject obj ) where TChild : DependencyObject
         {
+            if( obj is FrameworkElement fe )
+            {
+                fe.ApplyTemplate();
+            }
+
             for( int i = 0; i < VisualTreeHelper.GetChildrenCount( obj ); i++ )
             {
                 DependencyObject child = VisualTreeHelper.GetChild( obj, i );
-                if( child is ChildType childType )
+                if( child is TChild childType )
                 {
                     yield return childType;
                 }
 
-                foreach( var descendant in child.GetVisualChildren<ChildType>() )
+                foreach( var descendant in child.GetVisualChildren<TChild>() )
                 {
                     yield return descendant;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the first visual descendant of the specified type from a <see cref="DependencyObject"/>.
+        /// </summary>
+        /// <typeparam name="TDescendant">Type of the searched visual descendant.</typeparam>
+        /// <param name="obj">A <see cref="DependencyObject"/>.</param>
+        /// <returns>The first visual descendant of the specified type, or <c>null</c> if no such descendant is found.</returns>
+        public static TDescendant? GetFirstVisualDescendant<TDescendant>( this DependencyObject obj ) where TDescendant : DependencyObject
+        {
+            if( obj is TDescendant descendant )
+            {
+                return descendant;
+            }
+            else
+            {
+                return obj.GetVisualChildren<TDescendant>().FirstOrDefault();
             }
         }
     }
