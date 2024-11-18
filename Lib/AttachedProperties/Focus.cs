@@ -23,14 +23,14 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// </summary>
         public static readonly DependencyProperty SetFocusProperty =
             DependencyProperty.RegisterAttached( "SetFocus", typeof( DelegateTrigger ), typeof( Focus ),
-                new FrameworkPropertyMetadata( null, OnPropertyChanged ) );
+                new FrameworkPropertyMetadata( null, OnSetFocusPropertyChanged ) );
 
         /// <summary>
         /// Sets the value of the SetFocus property.
         /// </summary>
         /// <param name="obj">Dependency object on which the property value is set.</param>
         /// <param name="value">Value to be set.</param>
-        public static void SetSetFocus( DependencyObject obj, DelegateTrigger value )
+        public static void SetSetFocus( DependencyObject obj, DelegateTrigger? value )
         {
             obj.SetValue( SetFocusProperty, value );
         }
@@ -40,7 +40,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// </summary>
         /// <param name="obj">Dependency object from which the property value is obtained.</param>
         /// <returns>Property value.</returns>
-        public static DelegateTrigger GetSetFocus( DependencyObject obj )
+        [AttachedPropertyBrowsableForType( typeof( FrameworkElement ) )]
+        public static DelegateTrigger? GetSetFocus( DependencyObject obj )
         {
             return (DelegateTrigger) obj.GetValue( SetFocusProperty );
         }
@@ -49,30 +50,34 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //                           PRIVATE PROPERTIES
         //===========================================================================
 
-        private static readonly DependencyProperty SetFocusDelegateProperty =
-            DependencyProperty.RegisterAttached( "_SetFocusDelegate", typeof( Action ), typeof( Focus ) );
+        private static readonly DependencyPropertyKey SetFocusDelegateProperty =
+            DependencyProperty.RegisterAttachedReadOnly( "_SetFocusDelegate", typeof( Action ), typeof( Focus ),
+                new PropertyMetadata( null ) );
 
-        private static void SetSetFocusDelegate( DependencyObject obj, Action value )
+        private static void SetSetFocusDelegate( DependencyObject obj, Action? value )
         {
             obj.SetValue( SetFocusDelegateProperty, value );
         }
 
-        private static Action GetSetFocusDelegate( DependencyObject obj )
+        private static Action? GetSetFocusDelegate( DependencyObject obj )
         {
-            return (Action) obj.GetValue( SetFocusDelegateProperty );
+            return (Action) obj.GetValue( SetFocusDelegateProperty.DependencyProperty );
         }
 
         //===========================================================================
         //                            PRIVATE METHODS
         //===========================================================================
 
-        private static void OnPropertyChanged( DependencyObject sender, DependencyPropertyChangedEventArgs e )
+        private static void OnSetFocusPropertyChanged( DependencyObject sender, DependencyPropertyChangedEventArgs e )
         {
-            if( sender is UIElement uiElement )
+            if( sender is FrameworkElement fe )
             {
+                fe.Unloaded -= TargetElement_OnUnloaded;
+                fe.Unloaded += TargetElement_OnUnloaded;
+
                 if( e.OldValue is DelegateTrigger oldAction )
                 {
-                    var oldDelegate = GetSetFocusDelegate( uiElement );
+                    var oldDelegate = GetSetFocusDelegate( fe );
 
                     if( oldDelegate != null )
                     {
@@ -82,28 +87,60 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
                 if( e.NewValue is DelegateTrigger newAction )
                 {
-                    var newDelegate = () => SetFocus( uiElement );
+                    var newDelegate = () => SetFocus( fe );
 
-                    SetSetFocusDelegate( uiElement, newDelegate );
+                    SetSetFocusDelegate( fe, newDelegate );
 
                     newAction.Activated += newDelegate;
+                }
+                else
+                {
+                    SetSetFocusDelegate( fe, null );
                 }
             }
         }
 
-        private static void SetFocus( UIElement uiElement )
+        private static void TargetElement_OnUnloaded( object sender, RoutedEventArgs e )
         {
-            uiElement.Dispatcher?.BeginInvoke( () =>
+            var fe = (FrameworkElement) sender;
+
+            var currentTrigger = GetSetFocus( fe );
+            var currentDelegate = GetSetFocusDelegate( fe );
+
+            if( ( currentTrigger != null ) && ( currentDelegate != null ) )
             {
-                if( uiElement is IInputElement )
+                currentTrigger.Activated -= currentDelegate;
+            }
+        }
+
+        private static void TargetElement_OnLoaded( object sender, RoutedEventArgs e )
+        {
+            var fe = (FrameworkElement) sender;
+
+            fe.Loaded -= TargetElement_OnLoaded;
+
+            DoSetFocus( fe );
+        }
+
+        private static void SetFocus( FrameworkElement fe )
+        {
+            if( !fe.IsLoaded )
+            {
+                // Delay setting focus until the element is loaded.
+                fe.Loaded += TargetElement_OnLoaded;
+            }
+            else
+            {
+                fe.Dispatcher?.BeginInvoke( () =>
                 {
-                    Keyboard.Focus( uiElement );
-                }
-                else
-                {
-                    uiElement.Focus();
-                }
-            } );
+                    DoSetFocus( fe );
+                } );
+            }
+        }
+
+        private static void DoSetFocus( FrameworkElement fe )
+        {
+            Keyboard.Focus( fe );
         }
     }
 }
