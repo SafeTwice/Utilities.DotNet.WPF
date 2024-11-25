@@ -1,79 +1,61 @@
-﻿
-using System.ComponentModel;
-
-
-using System.Runtime.CompilerServices;
-
-/// @file
+﻿/// @file
 /// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
+
+using Utilities.DotNet.Observables;
 
 namespace Utilities.DotNet.WPF.AttachedProperties
 {
     /// <summary>
     /// Base class for source items of <see cref="GridViewColumns.ColumnsSourceProperty"/>.
     /// </summary>
-    public class GridViewColumnInfo : IGridViewColumnInfo
+    public class GridViewColumnInfo : ObservableObjectEx, IGridViewColumnInfo
     {
-        //===========================================================================
-        //                          PUBLIC CONSTRUCTORS
-        //===========================================================================
-        public GridViewColumnInfo() :this(string.Empty) { }
-        public GridViewColumnInfo( string name, double? width = DEFAULT_WIDTH, bool isVisible = true )
-        {
-            m_name = name;
-            m_width = width;
-            m_isVisible = isVisible;
-
-        }
-
         //===========================================================================
         //                           PUBLIC PROPERTIES
         //===========================================================================
 
         /// <inheritdoc/>
         public string Name { get => m_name; set => SetProperty( ref m_name, value ); }
-        private string m_name;
 
         /// <inheritdoc/>
         public double? Width { get => m_width; set => SetProperty( ref m_width, value ); }
-        private double? m_width;
+
         /// <inheritdoc/>
         public double? ActualWidth { get => m_actualWidth; set => SetProperty( ref m_actualWidth, value ); }
+
+        //===========================================================================
+        //                          PUBLIC CONSTRUCTORS
+        //===========================================================================
+
+        public GridViewColumnInfo() : this( string.Empty )
+        {
+        }
+
+        public GridViewColumnInfo( string name, double? width = DEFAULT_WIDTH )
+        {
+            m_name = name;
+            m_width = width;
+        }
+
+        //===========================================================================
+        //                            PUBLIC METHODS
+        //===========================================================================
+
+        public override string ToString() => Name;
+
+        //===========================================================================
+        //                           PRIVATE CONSTANTS
+        //===========================================================================
+
+        private const double DEFAULT_WIDTH = 100.0;
+
+        //===========================================================================
+        //                           PRIVATE ATTRIBUTES
+        //===========================================================================
+
+        private string m_name;
+        private double? m_width;
         private double? m_actualWidth;
-
-        /// <inheritdoc/>
-        public bool IsVisible { get => m_isVisible; set => SetProperty( ref m_isVisible, value ); }
-        private bool m_isVisible;
-
-        //===========================================================================
-        //                             PUBLIC EVENTS
-        //===========================================================================
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        //===========================================================================
-        //                            PROTECTED METHODS
-        //===========================================================================
-
-
-        protected void SetProperty<T>( ref T field, T value, [CallerMemberName] string propertyName = "" )
-        {
-            if( !Equals( field, value ) )
-            {
-                field = value;
-                OnPropertyChanged( propertyName );
-            }
-        }
-        protected void OnPropertyChanged( [CallerMemberName] string propertyName = "" )
-        {
-            PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
-        }
-
-        //===========================================================================
-        //                           PUBLIC CONSTANTS
-        //===========================================================================
-
-        public const double DEFAULT_WIDTH = 100.0;
     }
 }

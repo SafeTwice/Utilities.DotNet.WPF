@@ -50,7 +50,6 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         {
             m_collectionView.CollectionChanged -= ColumnsSource_CollectionChanged;
             m_gridView.Columns.CollectionChanged -= Columns_CollectionChanged;
-
         }
 
         //===========================================================================
@@ -87,9 +86,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
             if( columnSourceItem is IGridViewColumnInfo columnInfo )
             {
-                
                 column.Header = columnInfo;
-               
+
                 if( cellTemplateSelector != null )
                 {
                     Func<object, object?> columnDataContextSelector;
@@ -108,36 +106,29 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                     column.CellTemplateSelector = columnTemplateSelector;
                 }
 
-                if( columnInfo.ActualWidth != null && columnInfo.Width != columnInfo.ActualWidth )
+                if( columnInfo.ActualWidth != null )
                 {
                     columnInfo.Width = columnInfo.ActualWidth;
                 }
-
-                if( columnInfo.Width == null || double.IsNaN( columnInfo.Width.Value ) )
+                else if( ( columnInfo.Width == null ) || double.IsNaN( columnInfo.Width.Value ) )
                 {
                     columnInfo.Width = columnInfo.ActualWidth ?? double.NaN;
                 }
 
-                Binding bindingWidth = new( nameof( columnInfo.Width ) )
+                Binding widthBinding = new( nameof( columnInfo.Width ) )
                 {
                     Source = columnInfo,
                     Mode = BindingMode.TwoWay
                 };
+                BindingOperations.SetBinding( column, GridViewColumn.WidthProperty, widthBinding );
 
-                BindingOperations.SetBinding( column, GridViewColumn.WidthProperty, bindingWidth );
-
-
-                INotifyPropertyChanged? notifyPropertyChanged = (INotifyPropertyChanged) column;
-                if( notifyPropertyChanged != null )
+                ( (INotifyPropertyChanged) column ).PropertyChanged += ( sender, e ) =>
                 {
-                    notifyPropertyChanged.PropertyChanged += ( sender, e ) =>
+                    if( e.PropertyName == nameof( column.ActualWidth ) )
                     {
-                        if( e.PropertyName == nameof( column.ActualWidth ) )
-                        {
-                            columnInfo.ActualWidth = column.ActualWidth;
-                        }
-                    };
-                }
+                        columnInfo.ActualWidth = column.ActualWidth;
+                    }
+                };
             }
             else
             {
@@ -175,11 +166,13 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         private void ColumnsSource_CollectionChanged( object? sender, NotifyCollectionChangedEventArgs e )
         {
-            Debug.Assert( ReferenceEquals( sender, m_collectionView ) );
             if( m_ignoreColumnSourceChanges )
             {
                 return;
             }
+
+            Debug.Assert( ReferenceEquals( sender, m_collectionView ) );
+
             switch( e.Action )
             {
                 case NotifyCollectionChangedAction.Add:
