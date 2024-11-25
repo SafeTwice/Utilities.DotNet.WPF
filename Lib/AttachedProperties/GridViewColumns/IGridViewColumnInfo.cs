@@ -2,12 +2,15 @@
 /// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
+using System.ComponentModel;
+using Utilities.DotNet.Observables;
+
 namespace Utilities.DotNet.WPF.AttachedProperties
 {
     /// <summary>
     /// Interface for source items of <see cref="GridViewColumns.ColumnsSourceProperty"/>.
     /// </summary>
-    public interface IGridViewColumnInfo
+    public interface IGridViewColumnInfo : INotifyPropertyChangedEx, INotifyPropertyChanged
     {
         //===========================================================================
         //                                PROPERTIES
@@ -22,5 +25,10 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// Width of the column.
         /// </summary>
         double? Width { get; set; }
+
+        /// <summary>
+        /// Actual width of the column.
+        /// </summary>
+        double? ActualWidth { get; set; }
     }
 }

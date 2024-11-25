@@ -4,10 +4,12 @@
 
 using System;
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace Utilities.DotNet.WPF.AttachedProperties
 {
@@ -26,6 +28,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
             m_collectionView = collectionView;
 
             m_collectionView.CollectionChanged += ColumnsSource_CollectionChanged;
+            m_gridView.Columns.CollectionChanged += Columns_CollectionChanged;
 
             LoadColumns();
         }
@@ -46,6 +49,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         public void Dispose()
         {
             m_collectionView.CollectionChanged -= ColumnsSource_CollectionChanged;
+            m_gridView.Columns.CollectionChanged -= Columns_CollectionChanged;
         }
 
         //===========================================================================
@@ -78,21 +82,19 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         private GridViewColumn CreateColumn( object? columnSourceItem, DataTemplateSelector? cellTemplateSelector, GridViewCellDataContextSelector? cellDataContextSelector )
         {
-            var columnInfo = columnSourceItem as IGridViewColumnInfo;
+            GridViewColumn column = new();
 
-            GridViewColumn column = new GridViewColumn();
-
-            if( columnInfo != null )
+            if( columnSourceItem is IGridViewColumnInfo columnInfo )
             {
-                column.Header = columnInfo.Name;
+                column.Header = columnInfo;
 
                 if( cellTemplateSelector != null )
                 {
                     Func<object, object?> columnDataContextSelector;
-                    
+
                     if( cellDataContextSelector == null )
                     {
-                        columnDataContextSelector = (item) => item;
+                        columnDataContextSelector = ( item ) => item;
                     }
                     else
                     {
@@ -104,10 +106,29 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                     column.CellTemplateSelector = columnTemplateSelector;
                 }
 
-                if( columnInfo.Width != null )
+                if( columnInfo.ActualWidth != null )
                 {
-                    column.Width = columnInfo.Width.Value;
+                    columnInfo.Width = columnInfo.ActualWidth;
                 }
+                else if( ( columnInfo.Width == null ) || double.IsNaN( columnInfo.Width.Value ) )
+                {
+                    columnInfo.Width = columnInfo.ActualWidth ?? double.NaN;
+                }
+
+                Binding widthBinding = new( nameof( columnInfo.Width ) )
+                {
+                    Source = columnInfo,
+                    Mode = BindingMode.TwoWay
+                };
+                BindingOperations.SetBinding( column, GridViewColumn.WidthProperty, widthBinding );
+
+                ( (INotifyPropertyChanged) column ).PropertyChanged += ( sender, e ) =>
+                {
+                    if( e.PropertyName == nameof( column.ActualWidth ) )
+                    {
+                        columnInfo.ActualWidth = column.ActualWidth;
+                    }
+                };
             }
             else
             {
@@ -145,6 +166,11 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         private void ColumnsSource_CollectionChanged( object? sender, NotifyCollectionChangedEventArgs e )
         {
+            if( m_ignoreColumnSourceChanges )
+            {
+                return;
+            }
+
             Debug.Assert( ReferenceEquals( sender, m_collectionView ) );
 
             switch( e.Action )
@@ -172,11 +198,31 @@ namespace Utilities.DotNet.WPF.AttachedProperties
             }
         }
 
+        private void Columns_CollectionChanged( object? sender, NotifyCollectionChangedEventArgs e )
+        {
+            if( e.Action == NotifyCollectionChangedAction.Move )
+            {
+                var sourceCollection = m_collectionView.SourceCollection as ObservableCollection<GridViewColumnInfo>;
+                if( sourceCollection == null )
+                {
+                    return;
+                }
+
+                m_ignoreColumnSourceChanges = true;
+
+                sourceCollection.Move( e.OldStartingIndex, e.NewStartingIndex );
+
+                m_ignoreColumnSourceChanges = false;
+            }
+        }
+
         //===========================================================================
         //                           PRIVATE ATTRIBUTES
         //===========================================================================
 
         private readonly GridView m_gridView;
         private readonly ICollectionView m_collectionView;
+        private bool m_ignoreColumnSourceChanges = false;
+
     }
 }
