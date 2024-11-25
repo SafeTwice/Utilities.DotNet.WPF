@@ -2,12 +2,11 @@
 /// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
-using System.Windows.Controls;
-using System.Windows;
-using System.Diagnostics;
 using System;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System.Diagnostics;
+using System.Windows;
+using System.Windows.Controls;
+using Utilities.DotNet.Observables;
 
 namespace Utilities.DotNet.WPF.AttachedProperties
 {
@@ -48,7 +47,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
     /// <summary>
     /// Defines an attached property to manage and observe the state of a <see cref="TextBox"/>.
     /// </summary>
-    public class TextBoxStateManager : INotifyPropertyChanged
+    public class TextBoxStateManager : ObservableObjectEx
     {
         //===========================================================================
         //                           PUBLIC PROPERTIES
@@ -88,6 +87,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
             set
             {
+                var oldValue = m_stateInfo.Text;
+
                 if( m_textBox != null )
                 {
                     m_textBox.Text = value;
@@ -95,7 +96,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
                 m_stateInfo.Text = value;
 
-                OnPropertyChanged();
+                OnPropertyChanged( oldValue, value );
             }
         }
 
@@ -106,6 +107,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
             set
             {
+                var oldValue = m_stateInfo.CaretIndex;
+
                 if( m_textBox != null )
                 {
                     m_textBox.CaretIndex = value;
@@ -113,7 +116,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
                 m_stateInfo.CaretIndex = value;
 
-                OnPropertyChanged();
+                OnPropertyChanged( oldValue, value );
             }
         }
 
@@ -124,6 +127,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
             set
             {
+                var oldValue = m_stateInfo.SelectionStart;
+
                 if( m_textBox != null )
                 {
                     m_textBox.SelectionStart = value;
@@ -131,7 +136,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
                 m_stateInfo.SelectionStart = value;
 
-                OnPropertyChanged();
+                OnPropertyChanged( oldValue, value );
             }
         }
 
@@ -142,6 +147,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
             set
             {
+                var oldValue = m_stateInfo.SelectionLength;
+
                 if( m_textBox != null )
                 {
                     m_textBox.SelectionLength = value;
@@ -149,7 +156,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
                 m_stateInfo.SelectionLength = value;
 
-                OnPropertyChanged();
+                OnPropertyChanged( oldValue, value );
             }
         }
 
@@ -166,9 +173,6 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// Event raised when the selection of the <see cref="TextBox"/> changes.
         /// </summary>
         public event TextBoxStateChangedEventHandler? SelectionChanged;
-
-        /// <inheritdoc/>
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
@@ -209,26 +213,31 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         public void SetState( TextBoxState stateInfo )
         {
+            var oldStateInfo = new TextBoxState( m_stateInfo );
+
             m_stateInfo = stateInfo;
 
-            var textBox = m_textBox;
-
-            if( textBox != null )
+            lock( m_lock )
             {
-                m_textBox = null; // Temporally disable triggering of events
+                var currentTextBox = m_textBox;
 
-                textBox.Text = m_stateInfo.Text;
-                textBox.CaretIndex = m_stateInfo.CaretIndex;
-                textBox.SelectionStart = m_stateInfo.SelectionStart;
-                textBox.SelectionLength = m_stateInfo.SelectionLength;
+                if( currentTextBox != null )
+                {
+                    m_textBox = null; // Temporally disable triggering of events
 
-                m_textBox = textBox; // Re-enabled triggering of events
+                    currentTextBox.Text = m_stateInfo.Text;
+                    currentTextBox.CaretIndex = m_stateInfo.CaretIndex;
+                    currentTextBox.SelectionStart = m_stateInfo.SelectionStart;
+                    currentTextBox.SelectionLength = m_stateInfo.SelectionLength;
+
+                    m_textBox = currentTextBox; // Re-enabled triggering of events
+                }
             }
 
-            OnPropertyChanged( nameof( Text ) );
-            OnPropertyChanged( nameof( CaretIndex ) );
-            OnPropertyChanged( nameof( SelectionStart ) );
-            OnPropertyChanged( nameof( SelectionLength ) );
+            OnPropertyChanged( oldStateInfo.Text, stateInfo.Text, nameof( Text ) );
+            OnPropertyChanged( oldStateInfo.CaretIndex, stateInfo.CaretIndex, nameof( CaretIndex ) );
+            OnPropertyChanged( oldStateInfo.SelectionStart, stateInfo.SelectionStart, nameof( SelectionStart ) );
+            OnPropertyChanged( oldStateInfo.SelectionLength, stateInfo.SelectionLength, nameof( SelectionLength ) );
         }
 
         //===========================================================================
@@ -256,39 +265,51 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         private void SetTextBox( TextBox textBox )
         {
-            m_textBox = textBox;
+            lock( m_lock )
+            {
+                m_textBox = textBox;
 
-            m_textBox.Text = m_stateInfo.Text;
-            m_textBox.CaretIndex = m_stateInfo.CaretIndex;
-            m_textBox.SelectionStart = m_stateInfo.SelectionStart;
-            m_textBox.SelectionLength = m_stateInfo.SelectionLength;
+                m_textBox.Text = m_stateInfo.Text;
+                m_textBox.CaretIndex = m_stateInfo.CaretIndex;
+                m_textBox.SelectionStart = m_stateInfo.SelectionStart;
+                m_textBox.SelectionLength = m_stateInfo.SelectionLength;
 
-            m_textBox.TextChanged += TextBox_TextChanged;
-            m_textBox.SelectionChanged += TextBox_SelectionChanged;
+                m_textBox.TextChanged += TextBox_TextChanged;
+                m_textBox.SelectionChanged += TextBox_SelectionChanged;
+            }
         }
 
         private void UnsetTextBox()
         {
-            if( m_textBox != null )
+            lock( m_lock )
             {
-                m_textBox.TextChanged -= TextBox_TextChanged;
-                m_textBox.SelectionChanged -= TextBox_SelectionChanged;
+                if( m_textBox != null )
+                {
+                    m_textBox.TextChanged -= TextBox_TextChanged;
+                    m_textBox.SelectionChanged -= TextBox_SelectionChanged;
 
-                m_textBox = null;
+                    m_textBox = null;
+                }
             }
         }
 
         private void TextBox_TextChanged( object sender, RoutedEventArgs e )
         {
-            StateChanged( sender, e, true );
+            lock( m_lock )
+            {
+                StateChanged( sender, true );
+            }
         }
 
         private void TextBox_SelectionChanged( object sender, RoutedEventArgs e )
         {
-            StateChanged( sender, e, false );
+            lock( m_lock )
+            {
+                StateChanged( sender, false );
+            }
         }
 
-        private void StateChanged( object sender, RoutedEventArgs e, bool textChange )
+        private void StateChanged( object sender, bool textChange )
         {
             if( m_textBox == null )
             {
@@ -312,27 +333,24 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 {
                     TextChanged?.Invoke( this, eventArgs );
 
-                    OnPropertyChanged( nameof( Text ) );
+                    OnPropertyChanged( oldStateInfo.Text, m_stateInfo.Text, nameof( Text ) );
                 }
                 else
                 {
                     SelectionChanged?.Invoke( this, eventArgs );
 
-                    OnPropertyChanged( nameof( CaretIndex ) );
-                    OnPropertyChanged( nameof( SelectionStart ) );
-                    OnPropertyChanged( nameof( SelectionLength ) );
+                    OnPropertyChanged( oldStateInfo.CaretIndex, m_stateInfo.CaretIndex, nameof( CaretIndex ) );
+                    OnPropertyChanged( oldStateInfo.SelectionStart, m_stateInfo.SelectionStart, nameof( SelectionStart ) );
+                    OnPropertyChanged( oldStateInfo.SelectionLength, m_stateInfo.SelectionLength, nameof( SelectionLength ) );
                 }
             }
-        }
-
-        private void OnPropertyChanged( [CallerMemberName] string propertyName = "" )
-        {
-            PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
         }
 
         //===========================================================================
         //                           PRIVATE ATTRIBUTES
         //===========================================================================
+
+        private readonly object m_lock = new object();
 
         private TextBox? m_textBox;
 
