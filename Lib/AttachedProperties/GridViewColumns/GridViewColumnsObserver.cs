@@ -4,12 +4,12 @@
 
 using System;
 using System.Collections;
-using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows.Controls;
 using System.Windows.Data;
+using Utilities.DotNet.Collections;
 
 namespace Utilities.DotNet.WPF.AttachedProperties
 {
@@ -27,8 +27,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
             m_gridView = gridView;
             m_collectionView = collectionView;
 
-            m_collectionView.CollectionChanged += ColumnsSource_CollectionChanged;
-            m_gridView.Columns.CollectionChanged += Columns_CollectionChanged;
+            m_collectionView.CollectionChanged += ColumnsSourceView_CollectionChanged;
+            m_gridView.Columns.CollectionChanged += GridViewColumns_CollectionChanged;
 
             LoadColumns();
         }
@@ -48,8 +48,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         public void Dispose()
         {
-            m_collectionView.CollectionChanged -= ColumnsSource_CollectionChanged;
-            m_gridView.Columns.CollectionChanged -= Columns_CollectionChanged;
+            m_collectionView.CollectionChanged -= ColumnsSourceView_CollectionChanged;
+            m_gridView.Columns.CollectionChanged -= GridViewColumns_CollectionChanged;
         }
 
         //===========================================================================
@@ -164,7 +164,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
             }
         }
 
-        private void ColumnsSource_CollectionChanged( object? sender, NotifyCollectionChangedEventArgs e )
+        private void ColumnsSourceView_CollectionChanged( object? sender, NotifyCollectionChangedEventArgs e )
         {
             if( m_ignoreColumnSourceChanges )
             {
@@ -198,21 +198,26 @@ namespace Utilities.DotNet.WPF.AttachedProperties
             }
         }
 
-        private void Columns_CollectionChanged( object? sender, NotifyCollectionChangedEventArgs e )
+        private void GridViewColumns_CollectionChanged( object? sender, NotifyCollectionChangedEventArgs e )
         {
             if( e.Action == NotifyCollectionChangedAction.Move )
             {
-                var sourceCollection = m_collectionView.SourceCollection as ObservableCollection<GridViewColumnInfo>;
-                if( sourceCollection == null )
+                if( m_collectionView.SourceCollection is IListEx list )
                 {
-                    return;
+                    m_ignoreColumnSourceChanges = true;
+
+                    int oldIndex = e.OldStartingIndex;
+                    int newIndex = e.NewStartingIndex;
+
+                    if( newIndex > oldIndex )
+                    {
+                        newIndex++;
+                    }
+
+                    list.Move( oldIndex, newIndex );
+
+                    m_ignoreColumnSourceChanges = false;
                 }
-
-                m_ignoreColumnSourceChanges = true;
-
-                sourceCollection.Move( e.OldStartingIndex, e.NewStartingIndex );
-
-                m_ignoreColumnSourceChanges = false;
             }
         }
 
