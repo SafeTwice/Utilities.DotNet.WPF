@@ -41,11 +41,11 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                         return;
                     }
 #pragma warning restore CS0618
-
-                    ActualWidth = double.NaN;
                 }
 
                 SetProperty( ref m_width, value );
+
+                ActualWidth = m_width;
             }
         }
 
@@ -72,7 +72,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         {
             m_name = name;
             m_width = width;
-            m_actualWidth = double.NaN;
+            m_actualWidth = width;
         }
 
         //===========================================================================
