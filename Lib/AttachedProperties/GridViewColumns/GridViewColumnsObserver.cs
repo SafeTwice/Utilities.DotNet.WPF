@@ -39,7 +39,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         ~GridViewColumnsObserver()
         {
-            Dispose();
+            Cleanup();
         }
 
         //===========================================================================
@@ -48,8 +48,9 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         public void Dispose()
         {
-            m_collectionView.CollectionChanged -= ColumnsSourceView_CollectionChanged;
-            m_gridView.Columns.CollectionChanged -= GridViewColumns_CollectionChanged;
+            Cleanup();
+
+            GC.SuppressFinalize( this );
         }
 
         //===========================================================================
@@ -108,7 +109,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                     columnDataContextSelector = ( item ) => cellDataContextSelector( item, columnInfo );
                 }
 
-                var columnTemplateSelector = new GridViewColumnTemplateSelector( columnDataContextSelector, cellTemplateSelector );
+                var columnTemplateSelector = new GridViewColumnTemplateSelector( columnDataContextSelector, cellTemplateSelector, columnInfo );
 
                 column.CellTemplateSelector = columnTemplateSelector;
             }
@@ -215,6 +216,12 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                     m_ignoreColumnSourceChanges = false;
                 }
             }
+        }
+
+        private void Cleanup()
+        {
+            m_collectionView.CollectionChanged -= ColumnsSourceView_CollectionChanged;
+            m_gridView.Columns.CollectionChanged -= GridViewColumns_CollectionChanged;
         }
 
         //===========================================================================

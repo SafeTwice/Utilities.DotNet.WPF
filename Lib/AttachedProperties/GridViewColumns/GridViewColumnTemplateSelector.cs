@@ -17,10 +17,12 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <summary>
         /// Constructor.
         /// </summary>
-        public GridViewColumnTemplateSelector( Func<object, object?> dataContextSelector, DataTemplateSelector dataTemplateSelector )
+        public GridViewColumnTemplateSelector( Func<object, object?> dataContextSelector, DataTemplateSelector dataTemplateSelector,
+                                               IGridViewColumnInfo columnInfo )
         {
             m_dataContextSelector = dataContextSelector;
             m_dataTemplateSelector = dataTemplateSelector;
+            m_columnInfo = columnInfo;
         }
 
         //===========================================================================
@@ -37,6 +39,11 @@ namespace Utilities.DotNet.WPF.AttachedProperties
             if( dataTemplate != null )
             {
                 dataTemplate.VisualTree.SetValue( FrameworkElement.DataContextProperty, columnDataContext );
+
+                dataTemplate.VisualTree.AddHandler( FrameworkElement.LoadedEvent, new RoutedEventHandler( ( sender, e ) =>
+                {
+                    m_columnInfo.RefreshAutoSize();
+                } ) );
             }
 
             return dataTemplate;
@@ -48,5 +55,6 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         private readonly Func<object, object?> m_dataContextSelector;
         private readonly DataTemplateSelector m_dataTemplateSelector;
+        private readonly IGridViewColumnInfo m_columnInfo;
     }
 }
