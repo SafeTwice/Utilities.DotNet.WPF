@@ -24,13 +24,23 @@ namespace Utilities.DotNet.WPF.AttachedProperties
             get => m_width;
             set
             {
+                var oldValue = m_width;
+
                 if( double.IsNaN( value ) )
                 {
+#pragma warning disable CS0618
                     if( double.IsNaN( m_width ) )
                     {
                         // To force auto-sizing, the width must be set to a non-NaN value first.
-                        SetProperty( ref m_width, double.IsNaN( m_actualWidth ) ? 0 : m_actualWidth );
+                        m_width = double.IsNaN( m_actualWidth ) ? 0 : m_actualWidth;
+                        OnPropertyChanged( nameof( Width ) );
+
+                        m_width = double.NaN;
+                        OnPropertyChanged( nameof( Width ) );
+
+                        return;
                     }
+#pragma warning restore CS0618
 
                     ActualWidth = double.NaN;
                 }
