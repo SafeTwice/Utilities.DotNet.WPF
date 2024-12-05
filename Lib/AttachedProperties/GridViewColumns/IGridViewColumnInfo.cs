@@ -24,11 +24,31 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <summary>
         /// Width of the column.
         /// </summary>
-        double? Width { get; set; }
+        /// <remarks>
+        /// Set to <see cref="double.NaN"/> for auto-sizing.
+        /// </remarks>
+        double Width { get; set; }
 
         /// <summary>
         /// Actual width of the column.
         /// </summary>
-        double? ActualWidth { get; set; }
+        /// <remarks>
+        /// <para>
+        /// This property is automatically updated when the associated column width is set or updated. Setting this property has no effect.
+        /// <para>
+        /// </para>
+        /// When this property is set to <see cref="double.NaN"/>, the actual column width is unknown.
+        /// </para>
+        /// </remarks>
+        double ActualWidth { get; set; }
+
+        //===========================================================================
+        //                                  METHODS
+        //===========================================================================
+
+        /// <summary>
+        /// If the column is set to auto-size, forces the column to recalculate its width.
+        /// </summary>
+        void RefreshAutoSize();
     }
 }

@@ -19,43 +19,80 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         public string Name { get => m_name; set => SetProperty( ref m_name, value ); }
 
         /// <inheritdoc/>
-        public double? Width { get => m_width; set => SetProperty( ref m_width, value ); }
+        public double Width
+        {
+            get => m_width;
+            set
+            {
+                if( double.IsNaN( value ) )
+                {
+                    if( double.IsNaN( m_width ) )
+                    {
+                        // To force auto-sizing, the width must be set to a non-NaN value first.
+                        SetProperty( ref m_width, double.IsNaN( m_actualWidth ) ? 0 : m_actualWidth );
+                    }
+
+                    ActualWidth = double.NaN;
+                }
+
+                SetProperty( ref m_width, value );
+            }
+        }
 
         /// <inheritdoc/>
-        public double? ActualWidth { get => m_actualWidth; set => SetProperty( ref m_actualWidth, value ); }
+        public double ActualWidth { get => m_actualWidth; set => SetProperty( ref m_actualWidth, value ); }
 
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
         //===========================================================================
 
+        /// <summary>
+        /// Constructor.
+        /// </summary>
         public GridViewColumnInfo() : this( string.Empty )
         {
         }
 
-        public GridViewColumnInfo( string name, double? width = DEFAULT_WIDTH )
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="name">Name of the column.</param>
+        /// <param name="width">Width of the column.</param>
+        public GridViewColumnInfo( string name, double width = DEFAULT_WIDTH )
         {
             m_name = name;
             m_width = width;
+            m_actualWidth = double.NaN;
         }
 
         //===========================================================================
         //                            PUBLIC METHODS
         //===========================================================================
 
+        /// <inheritdoc/>
         public override string ToString() => Name;
+
+        /// <inheritdoc/>
+        public void RefreshAutoSize()
+        {
+            if( double.IsNaN( m_width ) )
+            {
+                Width = double.NaN;
+            }
+        }
 
         //===========================================================================
         //                           PRIVATE CONSTANTS
         //===========================================================================
 
-        private const double DEFAULT_WIDTH = 100.0;
+        private const double DEFAULT_WIDTH = double.NaN;
 
         //===========================================================================
         //                           PRIVATE ATTRIBUTES
         //===========================================================================
 
         private string m_name;
-        private double? m_width;
-        private double? m_actualWidth;
+        private double m_width;
+        private double m_actualWidth;
     }
 }

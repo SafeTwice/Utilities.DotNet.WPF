@@ -75,65 +75,58 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
             foreach( var item in m_collectionView )
             {
-                GridViewColumn column = CreateColumn( item, cellTemplateSelector, cellDataContextSelector );
-                m_gridView.Columns.Add( column );
+                var column = CreateColumn( item, cellTemplateSelector, cellDataContextSelector );
+                if( column != null )
+                {
+                    m_gridView.Columns.Add( column );
+                }
             }
         }
 
-        private GridViewColumn CreateColumn( object? columnSourceItem, DataTemplateSelector? cellTemplateSelector, GridViewCellDataContextSelector? cellDataContextSelector )
+        private GridViewColumn? CreateColumn( object? columnSourceItem, DataTemplateSelector? cellTemplateSelector, GridViewCellDataContextSelector? cellDataContextSelector )
         {
-            GridViewColumn column = new();
-
-            if( columnSourceItem is IGridViewColumnInfo columnInfo )
+            if( columnSourceItem is not IGridViewColumnInfo columnInfo )
             {
-                column.Header = columnInfo;
-
-                if( cellTemplateSelector != null )
-                {
-                    Func<object, object?> columnDataContextSelector;
-
-                    if( cellDataContextSelector == null )
-                    {
-                        columnDataContextSelector = ( item ) => item;
-                    }
-                    else
-                    {
-                        columnDataContextSelector = ( item ) => cellDataContextSelector( item, columnInfo );
-                    }
-
-                    var columnTemplateSelector = new GridViewColumnTemplateSelector( columnDataContextSelector, cellTemplateSelector );
-
-                    column.CellTemplateSelector = columnTemplateSelector;
-                }
-
-                if( columnInfo.ActualWidth != null )
-                {
-                    columnInfo.Width = columnInfo.ActualWidth;
-                }
-                else if( ( columnInfo.Width == null ) || double.IsNaN( columnInfo.Width.Value ) )
-                {
-                    columnInfo.Width = columnInfo.ActualWidth ?? double.NaN;
-                }
-
-                Binding widthBinding = new( nameof( columnInfo.Width ) )
-                {
-                    Source = columnInfo,
-                    Mode = BindingMode.TwoWay
-                };
-                BindingOperations.SetBinding( column, GridViewColumn.WidthProperty, widthBinding );
-
-                ( (INotifyPropertyChanged) column ).PropertyChanged += ( sender, e ) =>
-                {
-                    if( e.PropertyName == nameof( column.ActualWidth ) )
-                    {
-                        columnInfo.ActualWidth = column.ActualWidth;
-                    }
-                };
+                return null;
             }
-            else
+
+            GridViewColumn column = new()
             {
-                column.Width = 0;
+                Header = columnInfo
+            };
+
+            if( cellTemplateSelector != null )
+            {
+                Func<object, object?> columnDataContextSelector;
+
+                if( cellDataContextSelector == null )
+                {
+                    columnDataContextSelector = ( item ) => item;
+                }
+                else
+                {
+                    columnDataContextSelector = ( item ) => cellDataContextSelector( item, columnInfo );
+                }
+
+                var columnTemplateSelector = new GridViewColumnTemplateSelector( columnDataContextSelector, cellTemplateSelector );
+
+                column.CellTemplateSelector = columnTemplateSelector;
             }
+
+            Binding widthBinding = new( nameof( columnInfo.Width ) )
+            {
+                Source = columnInfo,
+                Mode = BindingMode.TwoWay
+            };
+            BindingOperations.SetBinding( column, GridViewColumn.WidthProperty, widthBinding );
+
+            ( (INotifyPropertyChanged) column ).PropertyChanged += ( sender, e ) =>
+            {
+                if( e.PropertyName == nameof( column.ActualWidth ) )
+                {
+                    columnInfo.ActualWidth = column.ActualWidth;
+                }
+            };
 
             return column;
         }
@@ -151,8 +144,11 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
             for( int i = 0; i < newColumns.Count; i++ )
             {
-                GridViewColumn column = CreateColumn( newColumns[ i ], cellTemplateSelector, cellDataContextSelector );
-                m_gridView.Columns.Insert( insertionIndex + i, column );
+                var column = CreateColumn( newColumns[ i ], cellTemplateSelector, cellDataContextSelector );
+                if( column != null )
+                {
+                    m_gridView.Columns.Insert( insertionIndex + i, column );
+                }
             }
         }
 
