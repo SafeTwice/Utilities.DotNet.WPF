@@ -1,21 +1,56 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFrameworks>net472;net6.0-windows;net7.0-windows;net8.0-windows</TargetFrameworks>
-        <Nullable>enable</Nullable>
-        <UseWPF>true</UseWPF>
-        <LangVersion>10</LangVersion>
-        <Version>1.2.1</Version>
-        <RootNamespace>Utilities.DotNet.WPF</RootNamespace>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>net472;net6.0-windows;net7.0-windows;net8.0-windows</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <LangVersion>10</LangVersion>
+    <Version>1.2.1.100</Version>
+    <RootNamespace>Utilities.DotNet.WPF</RootNamespace>
+    <NoWarn>CS1587</NoWarn>
+    <DebugType>embedded</DebugType>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <Title>$(AssemblyName)</Title>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Authors>SafeTwice S.L.</Authors>
+    <PackageProjectUrl>https://github.com/SafeTwice/Utilities.DotNet.WPF</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/SafeTwice/Utilities.DotNet.WPF.git</RepositoryUrl>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageTags>.net;dotnet;utilities;util;wpf</PackageTags>
+    <Company>www.safetwice.com</Company>
+    <Description>WPF utilities library for .NET</Description>
+    <Copyright>Copyright © 2022-2025 SafeTwice S.L.</Copyright>
+    <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.135" />
+    <PackageReference Include="Utilities.DotNet" Version="1.4.1.100" />
+    <PackageReference Include="Utilities.DotNet.Collections" Version="1.4.1.100" />
+  </ItemGroup>
 
-    <ItemGroup>
-      <ProjectReference Include="..\..\Utilities.DotNet\Collections\Utilities.DotNet.Collections.csproj" />
-      <ProjectReference Include="..\..\Utilities.DotNet\Lib\Utilities.DotNet.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <None Include="../README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(GITHUB_EVENT_NAME)'=='release'">
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.2.25">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
 
 </Project>
