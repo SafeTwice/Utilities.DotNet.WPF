@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System;
@@ -55,20 +55,6 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
             {
                 return ProvideStaticValue( targetObject, targetProperty );
             }
-        }
-
-        private bool IsTargetCultureRelevant( object targetProperty )
-        {
-            if( targetProperty is DependencyProperty targetDependencyProperty )
-            {
-                var targetPropertyType = targetDependencyProperty.PropertyType;
-                if( targetPropertyType == typeof( string ) )
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         //===========================================================================
@@ -161,6 +147,12 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
             /// </summary>
             public bool IsReversible { get; }
 
+            /// <summary>
+            /// Constructor.
+            /// </summary>
+            /// <param name="value">Effective value of the component.</param>
+            /// <param name="culture">Culture of the component.</param>
+            /// <param name="isReversible">Indicates whether the component is reversible.</param>
             public ComponentValue( object? value, CultureInfo? culture, bool isReversible )
             {
                 Value = value;
@@ -355,7 +347,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
             return Helper.TryConvertValue( staticValue, targetType, targetCulture );
         }
 
-        public object? GetStaticValue( Type targetType, CultureInfo targetCulture )
+        private object? GetStaticValue( Type targetType, CultureInfo targetCulture )
         {
             var emptyBindingExpressions = new List<BindingExpression>();
             var calculatedValue = CalculateEffectiveValue( Array.Empty<object>().GetEnumerator(), emptyBindingExpressions.GetEnumerator(),
@@ -377,6 +369,20 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
             }
 
             return culture ?? CultureInfo.InvariantCulture;
+        }
+
+        private static bool IsTargetCultureRelevant( object targetProperty )
+        {
+            if( targetProperty is DependencyProperty targetDependencyProperty )
+            {
+                var targetPropertyType = targetDependencyProperty.PropertyType;
+                if( targetPropertyType == typeof( string ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private MultiBindValue PrepareMultiBindValue( ReadOnlyCollection<BindingExpressionBase> bindingExpressions, Type targetType, CultureInfo targetCulture )

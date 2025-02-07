@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System.Windows.Controls;
@@ -38,7 +38,7 @@ namespace Utilities.DotNet.WPF.Extensions
         /// <summary>
         /// Deselects all items in a <see cref="TreeViewItem"/>.
         /// </summary>
-        /// <param name="treeView">A <see cref="TreeViewItem"/>.</param>
+        /// <param name="treeViewItem">A <see cref="TreeViewItem"/>.</param>
         public static void DeselectAllItems( this TreeViewItem treeViewItem )
         {
             treeViewItem.IsSelected = false;

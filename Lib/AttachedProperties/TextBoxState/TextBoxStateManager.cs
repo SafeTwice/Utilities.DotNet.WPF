@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System;
@@ -211,6 +211,10 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //                            PUBLIC METHODS
         //===========================================================================
 
+        /// <summary>
+        /// Sets the state of the <see cref="TextBox"/>.
+        /// </summary>
+        /// <param name="stateInfo">State of the <see cref="TextBox"/>.</param>
         public void SetState( TextBoxState stateInfo )
         {
             var oldStateInfo = new TextBoxState( m_stateInfo );

@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System.Windows;
@@ -12,7 +12,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
     /// </summary>
     /// <remarks>
     /// <para>When <see cref="Condition"/> is <c>false</c>, the value returned is <see cref="Visibility.Visible"/>.</para>
-    /// <para>Otherwise, the value returned is <see cref="Visibility.Hidden"/> if <see cref="HiddenWhenInvisible"/> is <c>true;</c>
+    /// <para>Otherwise, the value returned is <see cref="Visibility.Hidden"/> if <see cref="VisibleWhenBase.HiddenWhenInvisible">HiddenWhenInvisible</see> is <c>true</c>;
     /// or <see cref="Visibility.Collapsed"/> otherwise.</para>
     /// </remarks>
     [MarkupExtensionReturnType( typeof( Visibility ) )]

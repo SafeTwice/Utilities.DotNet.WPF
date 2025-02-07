@@ -19,15 +19,28 @@ namespace Utilities.DotNet.WPF.ControlHints
         //                           PUBLIC PROPERTIES
         //===========================================================================
 
-        public static readonly DependencyProperty HintProperty = DependencyProperty.RegisterAttached(
-           "Hint", typeof( object ), typeof( HintService ),
-           new FrameworkPropertyMetadata( null, new PropertyChangedCallback( OnHintChanged ) ) );
+        /// <summary>
+        /// The hint attached property.
+        /// </summary>
+        public static readonly DependencyProperty HintProperty =
+            DependencyProperty.RegisterAttached( "Hint", typeof( object ), typeof( HintService ),
+                new FrameworkPropertyMetadata( null, new PropertyChangedCallback( OnHintChanged ) ) );
 
+        /// <summary>
+        /// Gets the hint value.
+        /// </summary>
+        /// <param name="d">Dependency object to get the hint from.</param>
+        /// <returns>The hint value.</returns>
         public static object GetHint( DependencyObject d )
         {
             return d.GetValue( HintProperty );
         }
 
+        /// <summary>
+        /// Sets the hint value.
+        /// </summary>
+        /// <param name="d">Dependency object to set the hint on.</param>
+        /// <param name="value">The hint value.</param>
         public static void SetHint( DependencyObject d, object value )
         {
             d.SetValue( HintProperty, value );

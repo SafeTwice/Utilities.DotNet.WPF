@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System;
@@ -72,7 +72,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="additionalParametersNum">Number of additional parameters.</param>
+        /// <param name="additionalParameterTypes">Types of the additional parameters.</param>
         protected ConverterBase( IEnumerable<Type>? additionalParameterTypes = null )
             : base( ( additionalParameterTypes == null ) ? PARAMETER_TYPES : PARAMETER_TYPES.Concat( additionalParameterTypes ) )
         {
@@ -82,7 +82,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// Constructor that initializes the value to convert.
         /// </summary>
         /// <param name="value">Value to convert.</param>
-        /// <param name="additionalParametersNum">Number of additional parameters.</param>
+        /// <param name="additionalParameterTypes">Types of the additional parameters.</param>
         protected ConverterBase( object? value, IEnumerable<Type>? additionalParameterTypes = null ) : this( additionalParameterTypes )
         {
             Value = value;
@@ -125,7 +125,8 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         ///       in the first position followed with the values of the additional parameters.</para>
         /// </remarks>
         /// <param name="value">Value to convert.</param>
-        /// <param name="culture">Culture to use to convert the value.</param>
+        /// <param name="targetCulture">Culture to use to convert the value.</param>
+        /// <param name="sourceCulture">Culture of the value to convert.</param>
         /// <returns>Converted value and its associated culture.</returns>
         protected abstract (object? value, CultureInfo? culture) ConvertValue( object? value, CultureInfo targetCulture, CultureInfo? sourceCulture );
 

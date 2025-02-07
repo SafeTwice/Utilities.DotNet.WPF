@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System.Windows.Markup;
@@ -36,11 +36,13 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         //                            PROTECTED METHODS
         //===========================================================================
 
+        /// <inheritdoc/>
         protected override bool CalculateValue( object? operandValue )
         {
             return operandValue is null;
         }
 
+        /// <inheritdoc/>
         protected override object? CalculateBackValue( bool targetValue, ComponentValue operandValue )
         {
             return null;

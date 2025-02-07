@@ -1,11 +1,11 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
-    /// Markup extension that performs the logic OR of two boolean values (A && B).
+    /// Markup extension that performs the logic OR of two boolean values (A || B).
     /// </summary>
     public sealed class Or : BooleanBinaryOperationBase
     {

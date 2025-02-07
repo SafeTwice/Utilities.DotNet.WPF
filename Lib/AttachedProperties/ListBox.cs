@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System.Windows;
@@ -10,7 +10,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
     using ListBoxControl = System.Windows.Controls.ListBox;
 
     /// <summary>
-    /// Provides attached properties to change the behavior of <see cref="ListBoxControl">ListBox</see>s.
+    /// Provides attached properties to change the behavior of <see cref="ListBoxControl">ListBox</see>es.
     /// </summary>
     public static class ListBox
     {

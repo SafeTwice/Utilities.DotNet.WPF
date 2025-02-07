@@ -1,11 +1,11 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
-    /// Markup extension that checks that a number is equal or smaller than the other (A <= B).
+    /// Markup extension that checks that a number is equal or smaller than the other (A &lt;= B).
     /// </summary>
     public sealed class IsLessOrEqual : ComparisonOperationBase
     {

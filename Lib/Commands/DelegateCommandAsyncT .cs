@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2021-2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2021-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System;
@@ -40,6 +40,7 @@ namespace Utilities.DotNet.WPF.Commands
         /// Constructor.
         /// </summary>
         /// <param name="execute">Action to execute asynchronously when the command is executed.</param>
+        /// <param name="allowMultipleExecutions">Indicates if the command can be executed multiple times simultaneously.</param>
         public DelegateCommandAsync( Func<T, Task> execute, bool allowMultipleExecutions = false ) : this( execute, () => true, allowMultipleExecutions )
         {
         }
@@ -49,6 +50,7 @@ namespace Utilities.DotNet.WPF.Commands
         /// </summary>
         /// <param name="execute">Action to execute asynchronously when the command is executed.</param>
         /// <param name="canExecute">Function that evaluates if the command can be executed.</param>
+        /// <param name="allowMultipleExecutions">Indicates if the command can be executed multiple times simultaneously.</param>
         public DelegateCommandAsync( Func<T, Task> execute, Func<bool> canExecute, bool allowMultipleExecutions = false )
         {
             m_execute = execute;

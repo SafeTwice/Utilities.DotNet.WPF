@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using Microsoft.Xaml.Behaviors;
@@ -86,6 +86,7 @@ namespace Utilities.DotNet.WPF.Behaviors
         //                            PROTECTED METHODS
         //===========================================================================
 
+        /// <inheritdoc/>
         protected override void OnAttached()
         {
             base.OnAttached();
@@ -94,6 +95,7 @@ namespace Utilities.DotNet.WPF.Behaviors
             DataObject.AddPastingHandler( AssociatedObject, OnPasteEvent );
         }
 
+        /// <inheritdoc/>
         protected override void OnDetaching()
         {
             base.OnDetaching();

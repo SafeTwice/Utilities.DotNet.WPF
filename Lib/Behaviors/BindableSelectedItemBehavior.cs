@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using Microsoft.Xaml.Behaviors;
@@ -10,7 +10,7 @@ using Utilities.DotNet.WPF.Extensions;
 namespace Utilities.DotNet.WPF.Behaviors
 {
     /// <summary>
-    /// Behavior to bind the selected item of a TreeView to a view model property.
+    /// Behavior to bind the selected item of a <see cref="TreeView"/> to a view-model property.
     /// </summary>
     public class BindableSelectedItemBehavior : Behavior<TreeView>
     {
@@ -18,10 +18,16 @@ namespace Utilities.DotNet.WPF.Behaviors
         //                           PUBLIC PROPERTIES
         //===========================================================================
 
-        private static readonly DependencyProperty SelectedItemProperty =
+        /// <summary>
+        /// Dependency property for the <see cref="SelectedItem"/> property.
+        /// </summary>
+        public static readonly DependencyProperty SelectedItemProperty =
             DependencyProperty.Register( "SelectedItem", typeof( object ), typeof( BindableSelectedItemBehavior ),
                                          new UIPropertyMetadata( null, OnSelectedItemChanged ) );
 
+        /// <summary>
+        /// Gets or sets the selected item of the <see cref="TreeView"/>.
+        /// </summary>
         public object? SelectedItem
         {
             get { return GetValue( SelectedItemProperty ); }
@@ -32,6 +38,7 @@ namespace Utilities.DotNet.WPF.Behaviors
         //                            PROTECTED METHODS
         //===========================================================================
 
+        /// <inheritdoc/>
         protected override void OnAttached()
         {
             base.OnAttached();
@@ -39,6 +46,7 @@ namespace Utilities.DotNet.WPF.Behaviors
             AssociatedObject.SelectedItemChanged += OnTreeViewSelectedItemChanged;
         }
 
+        /// <inheritdoc/>
         protected override void OnDetaching()
         {
             base.OnDetaching();

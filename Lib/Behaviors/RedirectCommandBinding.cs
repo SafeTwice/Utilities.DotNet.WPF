@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2022 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2022-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using Microsoft.Xaml.Behaviors;
@@ -54,12 +54,14 @@ namespace Utilities.DotNet.WPF.Behaviors
         //                            PROTECTED METHODS
         //===========================================================================
 
+        /// <inheritdoc/>
         protected override void OnAttached()
         {
             base.OnAttached();
             RegisterBinding();
         }
 
+        /// <inheritdoc/>
         protected override void OnDetaching()
         {
             UnregisterBinding();

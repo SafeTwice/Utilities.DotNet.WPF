@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2023 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2023-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System;
@@ -31,6 +31,7 @@ namespace Utilities.DotNet.WPF.MVVM
         //                            PUBLIC METHODS
         //===========================================================================
 
+        /// <inheritdoc/>
         public override DataTemplate? SelectTemplate( object? item, DependencyObject container )
         {
             if( item == null )

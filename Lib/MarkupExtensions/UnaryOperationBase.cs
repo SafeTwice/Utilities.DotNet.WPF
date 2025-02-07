@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System;
@@ -79,6 +79,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// <returns></returns>
         protected abstract TReturn? CalculateValue( TValue operandValue );
 
+        /// <inheritdoc/>
         protected sealed override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, ComponentValue[] currentValues )
         {
             Debug.Assert( sourceTypes.Length == NUM_OPERANDS );

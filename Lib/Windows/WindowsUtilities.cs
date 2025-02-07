@@ -18,17 +18,26 @@ namespace Utilities.DotNet.WPF.Windows
         //                            PUBLIC METHODS
         //===========================================================================
 
-        public static void NavigateTo( this Window fromWindow, Window window )
+        /// <summary>
+        /// Navigates from one window to another.
+        /// </summary>
+        /// <param name="fromWindow">The window from which to navigate.</param>
+        /// <param name="toWindow">The window to which to navigate.</param>
+        public static void NavigateTo( this Window fromWindow, Window toWindow )
         {
-            window.Closed += ( sender, e ) =>
+            toWindow.Closed += ( sender, e ) =>
             {
                 fromWindow.Show();
             };
 
             fromWindow.Hide();
-            window.Show();
+            toWindow.Show();
         }
 
+        /// <summary>
+        /// Disables the close button of a window.
+        /// </summary>
+        /// <param name="window">A window.</param>
         public static void DisableCloseButton( this Window window )
         {
             IntPtr hwnd = new WindowInteropHelper( window ).EnsureHandle();
@@ -40,6 +49,10 @@ namespace Utilities.DotNet.WPF.Windows
             }
         }
 
+        /// <summary>
+        /// Enables the close button of a window.
+        /// </summary>
+        /// <param name="window">A window.</param>
         public static void EnableCloseButton( this Window window )
         {
             IntPtr hwnd = new WindowInteropHelper( window ).EnsureHandle();
