@@ -2,11 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net472;net6.0-windows;net7.0-windows;net8.0-windows</TargetFrameworks>
-    <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
-    <LangVersion>10</LangVersion>
-    <Version>1.2.1.100</Version>
-    <RootNamespace>Utilities.DotNet.WPF</RootNamespace>
     <NoWarn>CS1587</NoWarn>
     <DebugType>embedded</DebugType>
     <EnablePackageValidation>true</EnablePackageValidation>
@@ -23,6 +19,11 @@
     <PackageLicenseExpression>BSD-3-Clause</PackageLicenseExpression>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <Nullable>enable</Nullable>
+    <LangVersion>10</LangVersion>
+    <RootNamespace>Utilities.DotNet.WPF</RootNamespace>
+    <Version>1.3-rc1</Version>
+    <AssemblyVersion>1.2.1.101</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
