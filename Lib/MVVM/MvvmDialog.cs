@@ -36,8 +36,8 @@ namespace Utilities.DotNet.WPF.MVVM
 
             viewModel.MvvmDialog = this;
 
+            Loaded += OnLoaded;
             Closing += OnClosing;
-
             Closed += OnClosed;
         }
 
@@ -55,6 +55,11 @@ namespace Utilities.DotNet.WPF.MVVM
         //                            PRIVATE METHODS
         //===========================================================================
 
+        private void OnLoaded( object sender, RoutedEventArgs e )
+        {
+            ViewModel.OnLoaded();
+        }
+
         private void OnClosing( object? sender, CancelEventArgs e )
         {
             e.Cancel = !ViewModel.OnClosing();
@@ -64,6 +69,7 @@ namespace Utilities.DotNet.WPF.MVVM
         {
             ViewModel.OnClosed();
 
+            Loaded -= OnLoaded;
             Closing -= OnClosing;
             Closed -= OnClosed;
 

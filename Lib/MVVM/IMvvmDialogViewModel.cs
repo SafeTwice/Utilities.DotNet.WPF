@@ -28,6 +28,14 @@ namespace Utilities.DotNet.WPF.MVVM
         //===========================================================================
 
         /// <summary>
+        /// Called when the associated dialog is loaded.
+        /// </summary>
+        /// <remarks>
+        /// This method allows the view-model to perform initialization tasks when the associated dialog is loaded.
+        /// </remarks>
+        void OnLoaded();
+
+        /// <summary>
         /// Called when the associated dialog is closing.
         /// </summary>
         /// <remarks>

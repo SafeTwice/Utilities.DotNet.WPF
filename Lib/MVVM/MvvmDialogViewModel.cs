@@ -29,6 +29,14 @@ namespace Utilities.DotNet.WPF.MVVM
         //===========================================================================
 
         /// <summary>
+        /// Called when the associated dialog is loaded.
+        /// </summary>
+        /// <remarks>
+        /// Can be overridden in derived classes to perform initialization tasks when the associated dialog is loaded.
+        /// </remarks>
+        public virtual void OnLoaded() { }
+
+        /// <summary>
         /// Called when the associated dialog is closing.
         /// </summary>
         /// <remarks>
