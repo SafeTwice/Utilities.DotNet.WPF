@@ -2,6 +2,8 @@
 /// @copyright  Copyright (c) 2023 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
+using System.Windows.Threading;
+
 namespace Utilities.DotNet.WPF.MVVM
 {
     /// <summary>
@@ -13,6 +15,15 @@ namespace Utilities.DotNet.WPF.MVVM
     /// </remarks>
     public interface IMvvmDialog
     {
+        //===========================================================================
+        //                                PROPERTIES
+        //===========================================================================
+
+        /// <summary>
+        /// Gets the dispatcher of the dialog window.
+        /// </summary>
+        Dispatcher Dispatcher { get; }
+
         //===========================================================================
         //                                  METHODS
         //===========================================================================

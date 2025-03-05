@@ -22,8 +22,8 @@
     <Nullable>enable</Nullable>
     <LangVersion>10</LangVersion>
     <RootNamespace>Utilities.DotNet.WPF</RootNamespace>
-    <Version>1.3-rc4</Version>
-    <AssemblyVersion>1.2.1.103</AssemblyVersion>
+    <Version>1.3-rc5</Version>
+    <AssemblyVersion>1.2.1.104</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>

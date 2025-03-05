@@ -3,6 +3,7 @@
 /// @license    See LICENSE.txt
 
 using System.Windows;
+using System.Windows.Threading;
 
 namespace Utilities.DotNet.WPF.MVVM
 {
@@ -15,6 +16,15 @@ namespace Utilities.DotNet.WPF.MVVM
     /// </remarks>
     public interface IMvvmWindow
     {
+        //===========================================================================
+        //                                PROPERTIES
+        //===========================================================================
+
+        /// <summary>
+        /// Gets the dispatcher of the window.
+        /// </summary>
+        Dispatcher Dispatcher { get; }
+
         //===========================================================================
         //                                  METHODS
         //===========================================================================
