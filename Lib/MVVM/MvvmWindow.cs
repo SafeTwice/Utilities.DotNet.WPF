@@ -2,6 +2,8 @@
 /// @copyright  Copyright (c) 2023-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
+using System;
+using System.ComponentModel;
 using System.Windows;
 using Utilities.DotNet.WPF.Windows;
 
@@ -33,7 +35,11 @@ namespace Utilities.DotNet.WPF.MVVM
         {
             DataContext = viewModel;
 
-            ViewModel.MvvmWindow = this;
+            viewModel.MvvmWindow = this;
+
+            Closing += OnClosing;
+
+            Closed += OnClosed;
         }
 
         //===========================================================================
@@ -52,6 +58,25 @@ namespace Utilities.DotNet.WPF.MVVM
         public void NavigateTo( Window window )
         {
             WindowsUtilities.NavigateTo( this, window );
+        }
+
+        //===========================================================================
+        //                            PRIVATE METHODS
+        //===========================================================================
+
+        private void OnClosing( object? sender, CancelEventArgs e )
+        {
+            e.Cancel = !ViewModel.OnClosing();
+        }
+
+        private void OnClosed( object? sender, EventArgs e )
+        {
+            ViewModel.OnClosed();
+
+            Closing -= OnClosing;
+            Closed -= OnClosed;
+
+            DataContext = null;
         }
     }
 }

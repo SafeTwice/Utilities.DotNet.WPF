@@ -22,5 +22,26 @@ namespace Utilities.DotNet.WPF.MVVM
         /// Gets or sets the dialog window associated to the view-model.
         /// </summary>
         IMvvmDialog MvvmDialog { get; set; }
+
+        //===========================================================================
+        //                                  METHODS
+        //===========================================================================
+
+        /// <summary>
+        /// Called when the associated dialog is closing.
+        /// </summary>
+        /// <remarks>
+        /// This method allows the view-model to decide whether the associated dialog can be closed or not.
+        /// </remarks>
+        /// <returns><see langword="true"/> if the dialog can be closed; <see langword="false"/> otherwise.</returns>
+        bool OnClosing();
+
+        /// <summary>
+        /// Called when the associated dialog is closed.
+        /// </summary>
+        /// <remarks>
+        /// This method allows the view-model to perform cleanup tasks when the associated dialog is closed.
+        /// </remarks>
+        void OnClosed();
     }
 }

@@ -2,6 +2,8 @@
 /// @copyright  Copyright (c) 2023-2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
+using System;
+using System.ComponentModel;
 using System.Windows;
 
 namespace Utilities.DotNet.WPF.MVVM
@@ -27,12 +29,16 @@ namespace Utilities.DotNet.WPF.MVVM
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="viewModel">View-model associated to the dialog</param>
+        /// <param name="viewModel">View-model associated to the dialog.</param>
         public MvvmDialog( TViewModel viewModel )
         {
             DataContext = viewModel;
 
-            ViewModel.MvvmDialog = this;
+            viewModel.MvvmDialog = this;
+
+            Closing += OnClosing;
+
+            Closed += OnClosed;
         }
 
         //===========================================================================
@@ -43,6 +49,25 @@ namespace Utilities.DotNet.WPF.MVVM
         {
             DialogResult = result;
             Close();
+        }
+
+        //===========================================================================
+        //                            PRIVATE METHODS
+        //===========================================================================
+
+        private void OnClosing( object? sender, CancelEventArgs e )
+        {
+            e.Cancel = !ViewModel.OnClosing();
+        }
+
+        private void OnClosed( object? sender, EventArgs e )
+        {
+            ViewModel.OnClosed();
+
+            Closing -= OnClosing;
+            Closed -= OnClosed;
+
+            DataContext = null;
         }
     }
 }

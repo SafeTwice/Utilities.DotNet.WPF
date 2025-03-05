@@ -5,11 +5,11 @@
 namespace Utilities.DotNet.WPF.MVVM
 {
     /// <summary>
-    /// Represents the dialog window associated to a viewmodel.
+    /// Represents the dialog window associated to a view-model.
     /// </summary>
     /// <remarks>
     /// This interface exposes a basic set of features to control the behavior of a dialog window from
-    /// its associated viewmodel without breaking the MVVM design pattern.
+    /// its associated view-model without breaking the MVVM design pattern.
     /// </remarks>
     public interface IMvvmDialog
     {
@@ -20,8 +20,8 @@ namespace Utilities.DotNet.WPF.MVVM
         /// <summary>
         /// Closes the dialog.
         /// </summary>
-        /// <param name="result">Result of the dialog (see <see cref="System.Windows.Window.ShowDialog"/>)</param>
-        /// <exception cref="System.InvalidOperationException">Thrown if the window was not opened as a dialog</exception>
+        /// <param name="result">Result of the dialog (see <see cref="System.Windows.Window.ShowDialog"/>).</param>
+        /// <exception cref="System.InvalidOperationException">Thrown if the window was not opened as a dialog.</exception>
         void Close( bool result );
     }
 }
