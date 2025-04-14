@@ -2,6 +2,10 @@
 /// @copyright  Copyright (c) 2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
+using System;
+
+#pragma warning disable IDE0130
+
 namespace Utilities.DotNet.WPF.AttachedProperties
 {
     /// <summary>
@@ -16,22 +20,22 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <summary>
         /// Rich text content.
         /// </summary>
-        public TContent Content { get; set; }
+        public TContent Content { readonly get; set; }
 
         /// <summary>
         /// Caret index.
         /// </summary>
-        public int CaretIndex { get; set; }
+        public int CaretIndex { readonly get; set; }
 
         /// <summary>
         /// Selection start index.
         /// </summary>
-        public int SelectionStart { get; set; }
+        public int SelectionStart { readonly get; set; }
 
         /// <summary>
         /// Selection length.
         /// </summary>
-        public int SelectionEnd { get; set; }
+        public int SelectionEnd { readonly get; set; }
 
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
@@ -80,21 +84,25 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //===========================================================================
 
         /// <inheritdoc/>
-        public override bool Equals( object? obj )
+        public readonly override bool Equals( object? obj )
         {
             if( obj is RichTextBoxState<TContent> other )
             {
                 return Content.Equals( other.Content ) &&
-                       CaretIndex == other.CaretIndex &&
-                       SelectionStart == other.SelectionStart &&
-                       SelectionEnd == other.SelectionEnd;
+                       ( CaretIndex == other.CaretIndex ) &&
+                       ( SelectionStart == other.SelectionStart ) &&
+                       ( SelectionEnd == other.SelectionEnd );
             }
-            return false;
+            else
+            {
+                return false;
+            }
         }
 
         /// <inheritdoc/>
-        public override int GetHashCode()
+        public readonly override int GetHashCode()
         {
+#if NETFRAMEWORK
             unchecked
             {
                 int hash = 17;
@@ -104,6 +112,31 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 hash = ( hash * 23 ) + SelectionEnd;
                 return hash;
             }
+#else
+            return HashCode.Combine( Content, CaretIndex, SelectionStart, SelectionEnd );
+#endif
+        }
+
+        /// <summary>
+        /// Compares two <see cref="RichTextBoxState{TContent}"/> instances for equality.
+        /// </summary>
+        /// <param name="left">First instance to compare.</param>
+        /// <param name="right">Second instance to compare.</param>
+        /// <returns><see langword="true"/> if the instances are equal; otherwise, <see langword="false"/>.</returns>
+        public static bool operator ==( RichTextBoxState<TContent> left, RichTextBoxState<TContent> right )
+        {
+            return left.Equals( right );
+        }
+
+        /// <summary>
+        /// Compares two <see cref="RichTextBoxState{TContent}"/> instances for inequality.
+        /// </summary>
+        /// <param name="left">First instance to compare.</param>
+        /// <param name="right">Second instance to compare.</param>
+        /// <returns><see langword="true"/> if the instances are not equal; otherwise, <see langword="false"/>.</returns>
+        public static bool operator !=( RichTextBoxState<TContent> left, RichTextBoxState<TContent> right )
+        {
+            return !left.Equals( right );
         }
     }
 }

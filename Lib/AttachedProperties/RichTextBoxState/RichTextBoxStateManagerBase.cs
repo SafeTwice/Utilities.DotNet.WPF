@@ -9,6 +9,8 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using Utilities.DotNet.Observables;
 
+#pragma warning disable IDE0130
+
 namespace Utilities.DotNet.WPF.AttachedProperties
 {
     /// <summary>
@@ -43,7 +45,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
     /// </summary>
     /// <param name="sender"><see cref="RichTextBoxStateManagerBase{TContent}"/> where the event handler is attached.</param>
     /// <param name="e">Event data.</param>
-    public delegate void RichTextBoxStateChangedEventHandler<T>( RichTextBoxStateManagerBase<T> sender, RichTextBoxStateChangedEventArgs<T> e );
+    public delegate void RichTextBoxStateChangedEventHandler<T>( RichTextBoxStateManagerBase<T> sender, RichTextBoxStateChangedEventArgs<T> e )
+        where T : notnull;
 
     /// <summary>
     /// Defines an attached property to manage and observe the state of a <see cref="RichTextBox"/>.
@@ -134,6 +137,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                     TextPointer start = m_richTextBox.Document.ContentStart.GetPositionAtOffset( value );
                     m_richTextBox.Selection.Select( start, m_richTextBox.Selection.End );
                 }
+
                 m_stateInfo.SelectionStart = value;
 
                 OnPropertyChanged( oldValue, value );
@@ -189,15 +193,6 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="document">Rich text document.</param>
-        protected RichTextBoxStateManagerBase( FlowDocument document )
-        {
-            m_stateInfo = new RichTextBoxState<TContent>( SaveToContent( document ), 0, 0, 0 );
-        }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
         /// <param name="content">Rich text content.</param>
         protected RichTextBoxStateManagerBase( TContent content )
         {
@@ -210,10 +205,10 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <param name="content">Content.</param>
         /// <param name="caretIndex">Insertion position index of the caret.</param>
         /// <param name="selectionStart">Character index for the beginning of the current selection.</param>
-        /// <param name="SelectionEnd">Number of characters in the current selection.</param>
-        protected RichTextBoxStateManagerBase( TContent content, int caretIndex, int selectionStart, int SelectionEnd )
+        /// <param name="selectionEnd">Number of characters in the current selection.</param>
+        protected RichTextBoxStateManagerBase( TContent content, int caretIndex, int selectionStart, int selectionEnd )
         {
-            m_stateInfo = new RichTextBoxState<TContent>( content, caretIndex, selectionStart, SelectionEnd );
+            m_stateInfo = new RichTextBoxState<TContent>( content, caretIndex, selectionStart, selectionEnd );
         }
 
         //===========================================================================
@@ -252,6 +247,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                         {
                             currentRichTextBox.CaretPosition = caret;
                         }
+
                         if( ( selectionStart != null ) && ( selectionEnd != null ) )
                         {
                             currentRichTextBox.Selection.Select( selectionStart, selectionEnd );
@@ -295,8 +291,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         private static void AttachedManagerChanged( DependencyObject obj, DependencyPropertyChangedEventArgs e )
         {
-            var richTextBox = obj as RichTextBox;
-            if( richTextBox == null )
+            if( obj is not RichTextBox richTextBox )
             {
                 return;
             }
@@ -327,10 +322,12 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                     TextPointer caret = contentStart.GetPositionAtOffset( m_stateInfo.CaretIndex );
                     TextPointer selectionStart = contentStart.GetPositionAtOffset( m_stateInfo.SelectionStart );
                     TextPointer selectionEnd = contentStart.GetPositionAtOffset( m_stateInfo.SelectionEnd );
+
                     if( caret != null )
                     {
                         m_richTextBox.CaretPosition = caret;
                     }
+
                     if( ( selectionStart != null ) && ( selectionEnd != null ) )
                     {
                         m_richTextBox.Selection.Select( selectionStart, selectionEnd );
@@ -417,7 +414,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //                           PRIVATE ATTRIBUTES
         //===========================================================================
 
-        private readonly object m_lock = new object();
+        private readonly object m_lock = new();
         private RichTextBox? m_richTextBox;
         private RichTextBoxState<TContent> m_stateInfo;
     }

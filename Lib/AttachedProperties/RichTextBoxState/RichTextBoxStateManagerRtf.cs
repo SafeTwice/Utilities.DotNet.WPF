@@ -6,6 +6,8 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using Utilities.DotNet.WPF.Extensions;
 
+#pragma warning disable IDE0130
+
 namespace Utilities.DotNet.WPF.AttachedProperties
 {
     /// <summary>
@@ -28,8 +30,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="document">Rich text document.</param>
-        public RichTextBoxStateManagerRtf( FlowDocument document ) : base( document )
+        /// <param name="document">Flow document.</param>
+        public RichTextBoxStateManagerRtf( FlowDocument document ) : base( document.ToRtf() )
         {
         }
 
@@ -47,9 +49,9 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <param name="content"> content.</param>
         /// <param name="caretIndex">Insertion position index of the caret.</param>
         /// <param name="selectionStart">Character index for the beginning of the current selection.</param>
-        /// <param name="SelectionEnd">Number of characters in the current selection.</param>
-        public RichTextBoxStateManagerRtf( string content, int caretIndex, int selectionStart, int SelectionEnd )
-            : base( content, caretIndex, selectionStart, SelectionEnd )
+        /// <param name="selectionEnd">Number of characters in the current selection.</param>
+        public RichTextBoxStateManagerRtf( string content, int caretIndex, int selectionStart, int selectionEnd )
+            : base( content, caretIndex, selectionStart, selectionEnd )
         {
         }
 
