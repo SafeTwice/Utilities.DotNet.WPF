@@ -169,9 +169,9 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //===========================================================================
 
         /// <summary>
-        /// Event raised when the text of the <see cref="RichTextBox"/> changes.
+        /// Event raised when the content of the <see cref="RichTextBox"/> changes.
         /// </summary>
-        public event RichTextBoxStateChangedEventHandler<TContent>? TextChanged;
+        public event RichTextBoxStateChangedEventHandler<TContent>? ContentChanged;
 
         /// <summary>
         /// Event raised when the selection of the <see cref="RichTextBox"/> changes.
@@ -373,7 +373,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
             }
         }
 
-        private void StateChanged( object sender, bool textChange )
+        private void StateChanged( object sender, bool contentChange )
         {
             if( m_richTextBox == null )
             {
@@ -395,9 +395,9 @@ namespace Utilities.DotNet.WPF.AttachedProperties
             {
                 var eventArgs = new RichTextBoxStateChangedEventArgs<TContent>( oldStateInfo, m_stateInfo );
 
-                if( textChange )
+                if( contentChange )
                 {
-                    TextChanged?.Invoke( this, eventArgs );
+                    ContentChanged?.Invoke( this, eventArgs );
                     OnPropertyChanged( oldStateInfo.Content, m_stateInfo.Content, nameof( Content ) );
                 }
                 else
