@@ -233,9 +233,10 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 {
                     m_richTextBox = null; // Temporarily disable triggering of events
 
-                    currentRichTextBox.BeginChange();
                     try
                     {
+                        currentRichTextBox.BeginChange();
+
                         LoadFromContent( currentRichTextBox.Document, m_stateInfo.Content );
 
                         TextPointer contentStart = currentRichTextBox.Document.ContentStart;
@@ -256,9 +257,9 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                     finally
                     {
                         currentRichTextBox.EndChange();
-                    }
 
-                    m_richTextBox = currentRichTextBox; // Re-enable triggering of events
+                        m_richTextBox = currentRichTextBox; // Re-enable triggering of events
+                    }
                 }
             }
 
