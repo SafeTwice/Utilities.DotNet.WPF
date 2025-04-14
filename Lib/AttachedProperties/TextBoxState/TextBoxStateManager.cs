@@ -8,6 +8,8 @@ using System.Windows;
 using System.Windows.Controls;
 using Utilities.DotNet.Observables;
 
+#pragma warning disable IDE0130
+
 namespace Utilities.DotNet.WPF.AttachedProperties
 {
     /// <summary>
@@ -229,12 +231,21 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 {
                     m_textBox = null; // Temporally disable triggering of events
 
-                    currentTextBox.Text = m_stateInfo.Text;
-                    currentTextBox.CaretIndex = m_stateInfo.CaretIndex;
-                    currentTextBox.SelectionStart = m_stateInfo.SelectionStart;
-                    currentTextBox.SelectionLength = m_stateInfo.SelectionLength;
+                    try
+                    {
+                        currentTextBox.BeginChange();
 
-                    m_textBox = currentTextBox; // Re-enabled triggering of events
+                        currentTextBox.Text = m_stateInfo.Text;
+                        currentTextBox.CaretIndex = m_stateInfo.CaretIndex;
+                        currentTextBox.SelectionStart = m_stateInfo.SelectionStart;
+                        currentTextBox.SelectionLength = m_stateInfo.SelectionLength;
+                    }
+                    finally
+                    {
+                        currentTextBox.EndChange();
+
+                        m_textBox = currentTextBox; // Re-enabled triggering of events
+                    }
                 }
             }
 
@@ -250,8 +261,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         private static void AttachedManagerChanged( DependencyObject obj, DependencyPropertyChangedEventArgs e )
         {
-            var textBox = obj as TextBox;
-            if( textBox == null )
+            if( obj is not TextBox textBox )
             {
                 return;
             }
@@ -273,10 +283,18 @@ namespace Utilities.DotNet.WPF.AttachedProperties
             {
                 m_textBox = textBox;
 
-                m_textBox.Text = m_stateInfo.Text;
-                m_textBox.CaretIndex = m_stateInfo.CaretIndex;
-                m_textBox.SelectionStart = m_stateInfo.SelectionStart;
-                m_textBox.SelectionLength = m_stateInfo.SelectionLength;
+                m_textBox.BeginChange();
+                try
+                {
+                    m_textBox.Text = m_stateInfo.Text;
+                    m_textBox.CaretIndex = m_stateInfo.CaretIndex;
+                    m_textBox.SelectionStart = m_stateInfo.SelectionStart;
+                    m_textBox.SelectionLength = m_stateInfo.SelectionLength;
+                }
+                finally
+                {
+                    m_textBox.EndChange();
+                }
 
                 m_textBox.TextChanged += TextBox_TextChanged;
                 m_textBox.SelectionChanged += TextBox_SelectionChanged;
@@ -354,7 +372,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //                           PRIVATE ATTRIBUTES
         //===========================================================================
 
-        private readonly object m_lock = new object();
+        private readonly object m_lock = new();
 
         private TextBox? m_textBox;
 

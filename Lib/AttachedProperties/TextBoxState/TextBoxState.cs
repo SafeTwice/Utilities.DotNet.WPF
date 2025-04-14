@@ -2,6 +2,10 @@
 /// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
+using System;
+
+#pragma warning disable IDE0130
+
 namespace Utilities.DotNet.WPF.AttachedProperties
 {
     /// <summary>
@@ -16,23 +20,22 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <summary>
         /// Text contents.
         /// </summary>
-        public string Text { get; set; }
+        public string Text { readonly get; set; }
 
         /// <summary>
         /// Caret index.
         /// </summary>
-        public int CaretIndex { get; set; }
+        public int CaretIndex { readonly get; set; }
 
         /// <summary>
         /// Selection start index.
         /// </summary>
-        public int SelectionStart { get; set; }
+        public int SelectionStart { readonly get; set; }
 
         /// <summary>
         /// Selection length.
         /// </summary>
-        public int SelectionLength { get; set; }
-
+        public int SelectionLength { readonly get; set; }
 
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
@@ -81,7 +84,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //===========================================================================
 
         /// <inheritdoc/>
-        public override bool Equals( object? obj )
+        public override readonly bool Equals( object? obj )
         {
             if( obj is TextBoxState other )
             {
@@ -95,8 +98,9 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         }
 
         /// <inheritdoc/>
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
+#if NETFRAMEWORK
             unchecked
             {
                 int hash = 17;
@@ -106,6 +110,31 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 hash = ( hash * 23 ) + SelectionLength;
                 return hash;
             }
+#else
+            return HashCode.Combine( Text, CaretIndex, SelectionStart, SelectionLength );
+#endif
+        }
+
+        /// <summary>
+        /// Compares two <see cref="TextBoxState"/> instances for equality.
+        /// </summary>
+        /// <param name="left">First instance to compare.</param>
+        /// <param name="right">Second instance to compare.</param>
+        /// <returns><see langword="true"/> if the instances are equal; otherwise, <see langword="false"/>.</returns>
+        public static bool operator ==( TextBoxState left, TextBoxState right )
+        {
+            return left.Equals( right );
+        }
+
+        /// <summary>
+        /// Compares two <see cref="TextBoxState"/> instances for inequality.
+        /// </summary>
+        /// <param name="left">First instance to compare.</param>
+        /// <param name="right">Second instance to compare.</param>
+        /// <returns><see langword="true"/> if the instances are not equal; otherwise, <see langword="false"/>.</returns>
+        public static bool operator !=( TextBoxState left, TextBoxState right )
+        {
+            return !left.Equals( right );
         }
     }
 }
