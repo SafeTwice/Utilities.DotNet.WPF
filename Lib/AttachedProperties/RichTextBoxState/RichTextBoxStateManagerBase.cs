@@ -58,33 +58,6 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //===========================================================================
 
         /// <summary>
-        /// Dependency property for the attached Manager property.
-        /// </summary>
-        public static readonly DependencyProperty StateProperty =
-            DependencyProperty.RegisterAttached( "Manager", typeof( RichTextBoxStateManagerBase<TContent> ), typeof( RichTextBoxStateManagerBase<TContent> ),
-                new PropertyMetadata( null, AttachedManagerChanged ) );
-
-        /// <summary>
-        /// Gets the state manager of the <see cref="RichTextBox"/>.
-        /// </summary>
-        /// <param name="obj">The dependency object to get the value from.</param>
-        /// <returns>State of the <see cref="RichTextBox"/>.</returns>
-        public static RichTextBoxStateManagerBase<TContent> GetManager( DependencyObject obj )
-        {
-            return (RichTextBoxStateManagerBase<TContent>) obj.GetValue( StateProperty );
-        }
-
-        /// <summary>
-        /// Sets the state manager of the <see cref="RichTextBox"/>.
-        /// </summary>
-        /// <param name="obj">The dependency object to set the value to.</param>
-        /// <param name="value">State of the <see cref="RichTextBox"/>.</param>
-        public static void SetManager( DependencyObject obj, RichTextBoxStateManagerBase<TContent> value )
-        {
-            obj.SetValue( StateProperty, value );
-        }
-
-        /// <summary>
         /// Rich text content in string format.
         /// </summary>
         public TContent Content
@@ -286,11 +259,10 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <param name="document">The FlowDocument to save the content into.</param>
         protected abstract TContent SaveToContent( FlowDocument document );
 
-        //===========================================================================
-        //                            PRIVATE METHODS
-        //===========================================================================
-
-        private static void AttachedManagerChanged( DependencyObject obj, DependencyPropertyChangedEventArgs e )
+        /// <summary>
+        /// Processes the attached property changed event.
+        /// </summary>
+        protected static void AttachedManagerChanged( DependencyObject obj, DependencyPropertyChangedEventArgs e )
         {
             if( obj is not RichTextBox richTextBox )
             {
@@ -307,6 +279,10 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 newRichTextBoxState.SetRichTextBox( richTextBox );
             }
         }
+
+        //===========================================================================
+        //                            PRIVATE METHODS
+        //===========================================================================
 
         private void SetRichTextBox( RichTextBox richTextBox )
         {

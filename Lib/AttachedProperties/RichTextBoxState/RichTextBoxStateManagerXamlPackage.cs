@@ -2,6 +2,8 @@
 /// @copyright  Copyright (c) 2025 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
+using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using Utilities.DotNet.WPF.Extensions;
@@ -13,8 +15,39 @@ namespace Utilities.DotNet.WPF.AttachedProperties
     /// <summary>
     /// Defines an attached property to manage and observe the state of a <see cref="RichTextBox"/>.
     /// </summary>
-    public class RichTextBoxStateManagerXamlPackage : RichTextBoxStateManagerBase<byte[]>
+    public sealed class RichTextBoxStateManagerXamlPackage : RichTextBoxStateManagerBase<byte[]>
     {
+        //===========================================================================
+        //                           PUBLIC PROPERTIES
+        //===========================================================================
+
+        /// <summary>
+        /// Dependency property for the attached Manager property.
+        /// </summary>
+        public static readonly DependencyProperty StateProperty =
+        DependencyProperty.RegisterAttached( "Manager", typeof( RichTextBoxStateManagerXamlPackage ), typeof( RichTextBoxStateManagerXamlPackage ),
+                new PropertyMetadata( null, AttachedManagerChanged ) );
+
+        /// <summary>
+        /// Gets the state manager of the <see cref="RichTextBox"/>.
+        /// </summary>
+        /// <param name="obj">The rich text box to get the value from.</param>
+        /// <returns>State manager of the rich text box.</returns>
+        [Browsable( false )]
+        public static RichTextBoxStateManagerXamlPackage GetManager( RichTextBox obj )
+        {
+            return (RichTextBoxStateManagerXamlPackage) obj.GetValue( StateProperty );
+        }
+
+        /// <summary>
+        /// Sets the state manager of the <see cref="RichTextBox"/>.
+        /// </summary>
+        /// <param name="richTextBox">The rich text box to set the value to.</param>
+        /// <param name="value">State manager for the rich text box.</param>
+        public static void SetManager( RichTextBox richTextBox, RichTextBoxStateManagerXamlPackage value )
+        {
+            richTextBox.SetValue( StateProperty, value );
+        }
 
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
