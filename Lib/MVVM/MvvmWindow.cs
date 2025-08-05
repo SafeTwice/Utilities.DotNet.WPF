@@ -21,11 +21,18 @@ namespace Utilities.DotNet.WPF.MVVM
         /// <summary>
         /// Gets the view-model associated to the window.
         /// </summary>
-        public TViewModel ViewModel => (TViewModel) DataContext;
+        public TViewModel ViewModel => m_viewModel!;
 
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
         //===========================================================================
+
+        static MvvmWindow()
+        {
+            DataContextProperty.OverrideMetadata(
+                typeof( MvvmWindow<TViewModel> ),
+                new FrameworkPropertyMetadata( OnDataContextChangedEvent ) );
+        }
 
         /// <summary>
         /// Constructor.
@@ -33,9 +40,10 @@ namespace Utilities.DotNet.WPF.MVVM
         /// <param name="viewModel">View-model associated to the window</param>
         public MvvmWindow( TViewModel viewModel )
         {
+            m_viewModel = viewModel;
             DataContext = viewModel;
 
-            viewModel.MvvmWindow = this;
+            m_viewModel.MvvmWindow = this;
 
             Loaded += OnLoaded;
             Closing += OnClosing;
@@ -64,6 +72,15 @@ namespace Utilities.DotNet.WPF.MVVM
         //                            PRIVATE METHODS
         //===========================================================================
 
+        private static void OnDataContextChangedEvent( DependencyObject d, DependencyPropertyChangedEventArgs e )
+        {
+            var window = (MvvmWindow<TViewModel>) d;
+            if( !ReferenceEquals( e.NewValue, window.ViewModel ) )
+            {
+                throw new InvalidOperationException( $"The DataContext of {typeof( MvvmWindow<TViewModel> ).Name} windows cannot be modified." );
+            }
+        }
+
         private void OnLoaded( object sender, RoutedEventArgs e )
         {
             ViewModel.OnLoaded();
@@ -76,13 +93,20 @@ namespace Utilities.DotNet.WPF.MVVM
 
         private void OnClosed( object? sender, EventArgs e )
         {
-            ViewModel.OnClosed();
-
             Loaded -= OnLoaded;
             Closing -= OnClosing;
             Closed -= OnClosed;
 
-            DataContext = null;
+            ViewModel.OnClosed();
+
+            m_viewModel = default;
+            DataContext = m_viewModel;
         }
+
+        //===========================================================================
+        //                           PRIVATE ATTRIBUTES
+        //===========================================================================
+
+        private TViewModel? m_viewModel;
     }
 }
