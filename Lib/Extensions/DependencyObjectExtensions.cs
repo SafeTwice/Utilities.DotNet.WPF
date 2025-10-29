@@ -45,10 +45,10 @@ namespace Utilities.DotNet.WPF.Extensions
         /// <summary>
         /// Gets the visual children of the specified type of a <see cref="DependencyObject"/>.
         /// </summary>
-        /// <typeparam name="TChild">Type of the searched visual children.</typeparam>
+        /// <typeparam name="T">Type of the searched visual children.</typeparam>
         /// <param name="obj">A <see cref="DependencyObject"/>.</param>
         /// <returns>The visual children of the specified type.</returns>
-        public static IEnumerable<TChild> GetVisualChildren<TChild>( this DependencyObject obj ) where TChild : DependencyObject
+        public static IEnumerable<T> GetVisualChildren<T>( this DependencyObject obj ) where T : DependencyObject
         {
             if( obj is FrameworkElement fe )
             {
@@ -58,12 +58,12 @@ namespace Utilities.DotNet.WPF.Extensions
             for( int i = 0; i < VisualTreeHelper.GetChildrenCount( obj ); i++ )
             {
                 DependencyObject child = VisualTreeHelper.GetChild( obj, i );
-                if( child is TChild childType )
+                if( child is T childType )
                 {
                     yield return childType;
                 }
 
-                foreach( var descendant in child.GetVisualChildren<TChild>() )
+                foreach( var descendant in child.GetVisualChildren<T>() )
                 {
                     yield return descendant;
                 }
@@ -73,19 +73,39 @@ namespace Utilities.DotNet.WPF.Extensions
         /// <summary>
         /// Gets the first visual descendant of the specified type from a <see cref="DependencyObject"/>.
         /// </summary>
-        /// <typeparam name="TDescendant">Type of the searched visual descendant.</typeparam>
+        /// <typeparam name="T">Type of the searched visual descendant.</typeparam>
         /// <param name="obj">A <see cref="DependencyObject"/>.</param>
-        /// <returns>The first visual descendant of the specified type, or <c>null</c> if no such descendant is found.</returns>
-        public static TDescendant? GetFirstVisualDescendant<TDescendant>( this DependencyObject obj ) where TDescendant : DependencyObject
+        /// <returns>The first visual descendant of the specified type, or <see langword="null"/> if no such descendant is found.</returns>
+        public static T? GetFirstVisualDescendant<T>( this DependencyObject obj ) where T : DependencyObject
         {
-            if( obj is TDescendant descendant )
+            if( obj is T descendant )
             {
                 return descendant;
             }
             else
             {
-                return obj.GetVisualChildren<TDescendant>().FirstOrDefault();
+                return obj.GetVisualChildren<T>().FirstOrDefault();
             }
+        }
+
+        /// <summary>
+        /// Gets the first visual ancestor of the specified type from a <see cref="DependencyObject"/>.
+        /// </summary>
+        /// <typeparam name="T">Type of the searched visual ancestor.</typeparam>
+        /// <param name="obj">A <see cref="DependencyObject"/>.</param>
+        /// <returns>The first visual ancestor of the specified type, or <see langword="null"/> if no such ancestor is found.</returns>
+        public static T? GetVisualAncestor<T>( this DependencyObject obj ) where T : DependencyObject
+        {
+            while( obj != null )
+            {
+                obj = VisualTreeHelper.GetParent( obj );
+                if( obj is T specificObj )
+                {
+                    return specificObj;
+                }
+            }
+
+            return null;
         }
     }
 }
