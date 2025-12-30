@@ -63,8 +63,6 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
                 if( Command != null )
                 {
                     m_bindTarget = new BindTarget( targetObject );
-
-                    m_bindingExpression = BindingOperations.SetBinding( m_bindTarget, BindTarget.CommandProperty, Command.InternalBinding );
                 }
 
                 return new RoutedEventHandler( OnEvent );
@@ -119,9 +117,17 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         {
             ICommand? command = null;
 
-            if( ( m_bindTarget != null ) && ( m_bindingExpression != null ) )
+            if( ( Command != null ) && ( m_bindTarget != null ) )
             {
-                m_bindingExpression?.UpdateTarget();
+                // Binding is lazy to avoid binding errors if the reference object data context is not bound yet.
+                if( m_bindingExpression == null )
+                {
+                    m_bindingExpression = BindingOperations.SetBinding( m_bindTarget, BindTarget.CommandProperty, Command.InternalBinding );
+                }
+                else
+                {
+                    m_bindingExpression.UpdateTarget();
+                }
 
                 command = m_bindTarget.Command;
             }
