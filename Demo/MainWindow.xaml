@@ -17,8 +17,21 @@
         </x:Array>
     </Window.Resources>
     <Grid>
-        <TabControl>
-            <TabItem Header="Other Stuff" IsSelected="True">
+        <TabControl TabStripPlacement="Left">
+            <TabItem Header="Markup - 1" IsSelected="True">
+                <StackPanel PresentationTraceSources.TraceLevel="High">
+                    <Button Content="Click Me" Width="100" Height="30" Margin="10" Click="{ux:RoutedEventToCommand Command={ux:Bind ClickCommand}}"
+                            d:Command="{ux:Bind ClickCommand}"/>
+                    <RichTextBox Margin="10" Height="200" DataObject.Pasting="{ux:RoutedEventToCommand Command={ux:Bind PastingCommand}}">
+                        <FlowDocument>
+                            <Paragraph>
+                                <Run Text="{ux:Format FormatString='Button clicked {0} times.', P0={ux:Bind Path=ClickCount}}"/>
+                            </Paragraph>
+                        </FlowDocument>
+                    </RichTextBox>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Markup - 2" IsSelected="True">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -99,7 +112,7 @@
                     </Border>
                 </Grid>
             </TabItem>
-            <TabItem Header="DataTemplates">
+            <TabItem Header="Markup - DataTemplates">
                 <ListBox ItemsSource="{StaticResource Items}" Margin="10" ScrollViewer.CanContentScroll="False">
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="sys:String">
