@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2025 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2026 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System.ComponentModel;
@@ -15,7 +15,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
     /// <summary>
     /// Defines an attached property to manage and observe the state of a <see cref="RichTextBox"/>.
     /// </summary>
-    public sealed class RichTextBoxStateManagerXamlPackage : RichTextBoxStateManagerBase<byte[]>
+    public sealed class RichTextBoxStateManagerXamlPackage : RichTextBoxStateManagerBase<XamlPackageContainer>
     {
         //===========================================================================
         //                           PUBLIC PROPERTIES
@@ -64,7 +64,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// Constructor.
         /// </summary>
         /// <param name="document">Flow document.</param>
-        public RichTextBoxStateManagerXamlPackage( FlowDocument document ) : base( document.ToXamlPackage() )
+        public RichTextBoxStateManagerXamlPackage( FlowDocument document ) : base( new( document.ToXamlPackage() ) )
         {
         }
 
@@ -72,7 +72,15 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// Constructor.
         /// </summary>
         /// <param name="content">Rich text content.</param>
-        public RichTextBoxStateManagerXamlPackage( byte[] content ) : base( content )
+        public RichTextBoxStateManagerXamlPackage( XamlPackageContainer content ) : base( content )
+        {
+        }
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="content">Rich text content.</param>
+        public RichTextBoxStateManagerXamlPackage( byte[] content ) : base( new( content ) )
         {
         }
 
@@ -83,8 +91,19 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <param name="caretIndex">Insertion position index of the caret.</param>
         /// <param name="selectionStart">Character index for the beginning of the current selection.</param>
         /// <param name="selectionEnd">Number of characters in the current selection.</param>
-        public RichTextBoxStateManagerXamlPackage( byte[] content, int caretIndex, int selectionStart, int selectionEnd )
+        public RichTextBoxStateManagerXamlPackage( XamlPackageContainer content, int caretIndex, int selectionStart, int selectionEnd )
             : base( content, caretIndex, selectionStart, selectionEnd )
+        {
+        }
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="content"> content.</param>
+        /// <param name="caretIndex">Insertion position index of the caret.</param>
+        /// <param name="selectionStart">Character index for the beginning of the current selection.</param>
+        /// <param name="selectionEnd">Number of characters in the current selection.</param>
+        public RichTextBoxStateManagerXamlPackage( byte[] content, int caretIndex, int selectionStart, int selectionEnd )
+            : base( new( content ), caretIndex, selectionStart, selectionEnd )
         {
         }
 
@@ -93,15 +112,15 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //===========================================================================
 
         /// <inheritdoc />
-        protected override void LoadFromContent( FlowDocument document, byte[] value )
+        protected override void LoadFromContent( FlowDocument document, XamlPackageContainer value )
         {
-            document.LoadFromXamlPackage( value );
+            document.LoadFromXamlPackage( value.EncodedData );
         }
 
         /// <inheritdoc />
-        protected override byte[] SaveToContent( FlowDocument document )
+        protected override XamlPackageContainer SaveToContent( FlowDocument document )
         {
-            return document.ToXamlPackage();
+            return new( document.ToXamlPackage() );
         }
     }
 }
