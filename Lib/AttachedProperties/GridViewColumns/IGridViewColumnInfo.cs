@@ -35,8 +35,8 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <remarks>
         /// <para>
         /// This property is automatically updated when the associated column width is set or updated. Setting this property has no effect.
-        /// <para>
         /// </para>
+        /// <para>
         /// When this property is set to <see cref="double.NaN"/>, the actual column width is unknown.
         /// </para>
         /// </remarks>

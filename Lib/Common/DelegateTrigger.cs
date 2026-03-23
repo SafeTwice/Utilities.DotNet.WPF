@@ -27,7 +27,7 @@ namespace Utilities.DotNet.WPF.Common
         {
             add
             {
-                lock( objectLock )
+                lock( m_lock )
                 {
                     m_eventHandler += value;
 
@@ -41,7 +41,7 @@ namespace Utilities.DotNet.WPF.Common
 
             remove
             {
-                lock( objectLock )
+                lock( m_lock )
                 {
                     m_eventHandler -= value;
                 }
@@ -57,7 +57,7 @@ namespace Utilities.DotNet.WPF.Common
         /// </summary>
         public void Activate()
         {
-            lock( objectLock )
+            lock( m_lock )
             {
                 if( m_eventHandler != null )
                 {
@@ -74,7 +74,7 @@ namespace Utilities.DotNet.WPF.Common
         //                           PRIVATE ATTRIBUTES
         //===========================================================================
 
-        private readonly object objectLock = new Object();
+        private readonly object m_lock = new object();
 
         private Action? m_eventHandler;
 

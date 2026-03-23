@@ -128,7 +128,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
 
         private static XamlPackageInfo GetXamlPackageInfo( byte[] xamlPackage )
         {
-
+            using var hasher = SHA256.Create();
             using var stream = new MemoryStream( xamlPackage );
             using var package = Package.Open( stream, FileMode.Open, FileAccess.Read );
 
@@ -138,7 +138,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
                 {
                     using var partStream = part.GetStream();
 
-                    var partHash = Hasher.ComputeHash( partStream );
+                    var partHash = hasher.ComputeHash( partStream );
 
                     return new XamlPartInfo( part.Uri, part.ContentType, partHash );
                 } ).ToArray();
@@ -150,8 +150,6 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         //===========================================================================
         //                           PRIVATE ATTRIBUTES
         //===========================================================================
-
-        private static readonly SHA256 Hasher = SHA256.Create();
 
         private XamlPackageInfo m_packageInfo;
     }

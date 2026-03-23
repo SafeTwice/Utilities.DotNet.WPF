@@ -29,7 +29,7 @@ namespace Utilities.DotNet.WPF.Extensions
 
                 tr.Save( ms, DataFormats.Rtf );
 
-                return ASCIIEncoding.Default.GetString( ms.ToArray() );
+                return Encoding.ASCII.GetString( ms.ToArray() );
             }
             catch
             {

@@ -24,9 +24,9 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <summary>
         /// Dependency property for the attached Manager property.
         /// </summary>
-        public static readonly DependencyProperty StateProperty =
+        public static readonly DependencyProperty ManagerProperty =
         DependencyProperty.RegisterAttached( "Manager", typeof( RichTextBoxStateManagerRtf ), typeof( RichTextBoxStateManagerRtf ),
-                new PropertyMetadata( null, AttachedManagerChanged ) );
+                                             new PropertyMetadata( null, AttachedManagerChanged ) );
 
         /// <summary>
         /// Gets the state manager of the <see cref="RichTextBox"/>.
@@ -36,7 +36,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         [Browsable( false )]
         public static RichTextBoxStateManagerRtf GetManager( RichTextBox obj )
         {
-            return (RichTextBoxStateManagerRtf) obj.GetValue( StateProperty );
+            return (RichTextBoxStateManagerRtf) obj.GetValue( ManagerProperty );
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Utilities.DotNet.WPF.AttachedProperties
         /// <param name="value">State of the <see cref="RichTextBox"/>.</param>
         public static void SetManager( RichTextBox obj, RichTextBoxStateManagerRtf value )
         {
-            obj.SetValue( StateProperty, value );
+            obj.SetValue( ManagerProperty, value );
         }
 
         //===========================================================================
