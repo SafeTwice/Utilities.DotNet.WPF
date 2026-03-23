@@ -31,7 +31,7 @@
                     </RichTextBox>
                 </StackPanel>
             </TabItem>
-            <TabItem Header="Markup - 2" IsSelected="True">
+            <TabItem Header="Markup - 2">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -62,7 +62,9 @@
                                               P0={ux:Xor A={ux:IsGreater A={ux:Bind Path=BorderThickness.Left, ElementName=Item23},
                                                                          B=3.0},
                                                          B=false}}"
-                             x:Name="Item22" Language="es" Visibility="{ux:VisibleWhen Condition={ux:Not I={ux:Bind Path=IsChecked, ElementName=Item21}}}"/>
+                             x:Name="Item22" Language="es"
+                             Visibility="{ux:VisibleWhen Condition={ux:Not I={ux:Bind Path=IsChecked, ElementName=Item21}},
+                                                         HiddenWhenInvisible=true}"/>
 
                     <TextBlock Grid.Row="2" Grid.Column="0" Text="Thickness (3):" Margin="5" HorizontalAlignment="Right"/>
                     <Border Grid.Row="2" Grid.Column="1" BorderThickness="{ux:Thickness Left={ux:Bind Path=Value, ElementName=Item230},
@@ -110,6 +112,13 @@
                                        Text="{ux:ToString FormatString=F2, Value={ux:Bind Path=Value, ElementName=Item233}}"/>
                         </Grid>
                     </Border>
+
+                    <TextBlock Grid.Row="3" Grid.Column="0" Text="Input Value [es] (4):" Margin="5" HorizontalAlignment="Right"/>
+                    <TextBox Grid.Row="3" Grid.Column="1" Margin="5" IsReadOnly="True"
+                             Text="{ux:Format FormatString='(2) is visible: {0}',
+                                              P0={ux:IsEqual A={ux:Bind Path=Visibility, ElementName=Item22},
+                                                             B={x:Static Visibility.Visible}}}"
+                             Language="es"/>
                 </Grid>
             </TabItem>
             <TabItem Header="Markup - DataTemplates">
