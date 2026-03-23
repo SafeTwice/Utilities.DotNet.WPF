@@ -38,11 +38,11 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected override bool CalculateValue( IComparable a, IComparable b )
+        protected override bool CalculateValue( IComparable? a, IComparable? b )
         {
             try
             {
-                return ( a.CompareTo( b ) > 0 );
+                return ( a!.CompareTo( b ) > 0 );
             }
             catch( Exception ex )
             {

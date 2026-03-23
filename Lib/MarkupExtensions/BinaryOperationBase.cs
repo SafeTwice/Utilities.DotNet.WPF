@@ -105,7 +105,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// <param name="a">First operand value.</param>
         /// <param name="b">Second operand value.</param>
         /// <returns>Effective value of the operation, or <c>null</c> of the back calculation is not possible.</returns>
-        protected abstract TReturn? CalculateValue( TA a, TB b );
+        protected abstract TReturn? CalculateValue( TA? a, TB? b );
 
         /// <inheritdoc/>
         protected sealed override object?[]? CalculateBackValues( object? targetValue, CultureInfo targetCulture, Type[] sourceTypes, ComponentValue[] currentValues )
