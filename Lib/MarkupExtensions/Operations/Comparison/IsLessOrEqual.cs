@@ -1,13 +1,15 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2026 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
+
+using System;
 
 namespace Utilities.DotNet.WPF.MarkupExtensions
 {
     /// <summary>
-    /// Markup extension that checks that a number is equal or smaller than the other (A &lt;= B).
+    /// Markup extension that checks that a number (or any other comparable object) is equal or smaller than the other (A &lt;= B).
     /// </summary>
-    public sealed class IsLessOrEqual : ComparisonOperationBase
+    public sealed class IsLessOrEqual : ComparisonOperationBase<IComparable>
     {
         //===========================================================================
         //                          PUBLIC CONSTRUCTORS
@@ -16,7 +18,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// <summary>
         /// Default constructor.
         /// </summary>
-        public IsLessOrEqual()
+        public IsLessOrEqual() : base( false )
         {
         }
 
@@ -25,7 +27,7 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         /// </summary>
         /// <param name="a">First number.</param>
         /// <param name="b">Second number.</param>
-        public IsLessOrEqual( object a, object b )
+        public IsLessOrEqual( object a, object b ) : base( false )
         {
             A = a;
             B = b;
@@ -36,9 +38,16 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
         //===========================================================================
 
         /// <inheritdoc/>
-        protected override bool CalculateValue( double a, double b )
+        protected override bool CalculateValue( IComparable a, IComparable b )
         {
-            return ( a <= b );
+            try
+            {
+                return ( a.CompareTo( b ) <= 0 );
+            }
+            catch( Exception ex )
+            {
+                throw new ArgumentException( $"Arguments A ('{a}') and B ('{b}') cannot be compared", ex );
+            }
         }
     }
 }

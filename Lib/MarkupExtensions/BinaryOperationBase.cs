@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024-2025 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2026 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System;
@@ -73,7 +73,9 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
             }
             else
             {
-                operationValue = CalculateValue( a!, b! );
+                var convertedValues = ConvertValues( a, b, parameterCultures[ A_INDEX ], parameterCultures[ B_INDEX ] );
+
+                operationValue = CalculateValue( convertedValues.a!, convertedValues.b! );
 
                 if( operationValue == null )
                 {
@@ -83,6 +85,16 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
 
             return (operationValue, null);
         }
+
+        /// <summary>
+        /// Performs conversion of operand values as necessary before calculating the operation value.
+        /// </summary>
+        /// <param name="a">First operand value.</param>
+        /// <param name="b">Second operand value.</param>
+        /// <param name="cultureA">Culture associated to the first operand.</param>
+        /// <param name="cultureB">Culture associated to the second operand.</param>
+        /// <returns>Converted operand values.</returns>
+        protected virtual (TA? a, TB? b) ConvertValues( TA? a, TB? b, CultureInfo? cultureA, CultureInfo? cultureB ) => (a, b);
 
         /// <summary>
         /// Calculates the value of the operation.
