@@ -1,5 +1,5 @@
 ﻿/// @file
-/// @copyright  Copyright (c) 2024 SafeTwice S.L. All rights reserved.
+/// @copyright  Copyright (c) 2026 SafeTwice S.L. All rights reserved.
 /// @license    See LICENSE.txt
 
 using System;
@@ -29,7 +29,14 @@ namespace Utilities.DotNet.WPF.MarkupExtensions
                 ( targetType != typeof( object ) ) &&
                 !targetType.IsAssignableFrom( value.GetType() ) )
             {
-                return Convert.ChangeType( value, targetType, culture ?? CultureInfo.InvariantCulture );
+                if( targetType.IsEnum && value is string strValue )
+                {
+                    return Enum.Parse( targetType, strValue, ignoreCase: true );
+                }
+                else
+                {
+                    return Convert.ChangeType( value, targetType, culture ?? CultureInfo.InvariantCulture );
+                }
             }
             else
             {
